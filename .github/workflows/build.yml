@@ -1,0 +1,45 @@
+name: Build
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Test engine & build plugins
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Test all modules
+        run: ./gradlew test --stacktrace
+
+      - name: Verify & build every plugin
+        run: |
+          set -e
+          for dir in plugins/*/; do
+            name=$(basename "$dir")
+            ./gradlew ":plugins:${name}:verifyPlugin" ":plugins:${name}:buildPlugin" --stacktrace
+          done
+
+      - name: Upload plugin distributions
+        uses: actions/upload-artifact@v4
+        with:
+          name: plugin-distributions
+          path: plugins/*/build/distributions/*.zip

@@ -1,0 +1,13 @@
+<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="cpGlassDark" x1="8" y1="8" x2="26" y2="26" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#7DD3FC"/>
+      <stop offset="1" stop-color="#A5B4FC"/>
+    </linearGradient>
+  </defs>
+  <!-- Magnifier: inspect a value -->
+  <circle cx="17" cy="17" r="10" fill="#FFFFFF" fill-opacity="0.04" stroke="url(#cpGlassDark)" stroke-width="3"/>
+  <path d="M24.5 24.5l8 8" stroke="url(#cpGlassDark)" stroke-width="4" stroke-linecap="round"/>
+  <!-- Checkmark inside: it passes the validator -->
+  <path d="M12 17.2l3.4 3.4 6.4-6.8" stroke="#22C55E" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

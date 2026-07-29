@@ -1,0 +1,44 @@
+<idea-plugin>
+    <id>io.github.vadimtoptunov.mrz-inspector</id>
+    <name>MRZ &amp; Barcode Inspector</name>
+    <vendor email="vtoptunov88@gmail.com" url="https://github.com/VadimToptunov/kassi-plugins">Vadim Toptunov</vendor>
+
+    <description><![CDATA[
+    <h2>MRZ &amp; Barcode Inspector — parse and validate KYC documents offline</h2>
+    <p>
+    A tool window for debugging travel-document and driver's-license parsing without hand-computing
+    check digits. Paste a value and get back the parsed fields plus a pass/fail verdict for every
+    check digit — the exact opposite direction of a generator, and the ideal companion to one.
+    </p>
+    <ul>
+      <li><b>MRZ tab</b> — paste a Machine Readable Zone: TD3 (2×44, passports), TD2 (2×36) or TD1
+      (3×30, ID cards). Parses document type, names, dates, nationality and validates every
+      individual check digit (document number, date of birth, expiry, personal number) plus the
+      composite check digit — using the same ICAO 7-3-1 routine already covered by
+      <i>Kassi Test Data</i>'s DE ID card generator.</li>
+      <li><b>Barcode tab</b> — paste the decoded text payload of an AAMVA-compliant PDF417 barcode
+      (US/Canada driver's license or ID card): header (IIN, AAMVA/jurisdiction version) and every
+      subfile's data elements, or a precise structural error if the payload is malformed.</li>
+    </ul>
+    <p>100% offline and algorithmic. Zero network calls, zero data collection.</p>
+    <p><b>Source, issues &amp; docs:</b> <a href="https://github.com/VadimToptunov/kassi-plugins">github.com/VadimToptunov/kassi-plugins</a></p>
+    ]]></description>
+
+    <change-notes><![CDATA[
+    <h3>1.0.0</h3>
+    <ul>
+      <li>Initial release: MRZ tab (TD1/TD2/TD3, per-field + composite check digits) and Barcode tab (AAMVA PDF417 payload parsing).</li>
+      <li>All parsing/validation logic reuses the shared, tested :engine module.</li>
+    </ul>
+    ]]></change-notes>
+
+    <!-- Platform-only plugin: loads in IntelliJ IDEA, Android Studio and other IntelliJ-based IDEs. -->
+    <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <toolWindow id="MRZ Inspector"
+                    secondary="true"
+                    anchor="right"
+                    factoryClass="io.github.vadimtoptunov.mrzinspector.toolwindow.MrzInspectorToolWindowFactory"/>
+    </extensions>
+</idea-plugin>

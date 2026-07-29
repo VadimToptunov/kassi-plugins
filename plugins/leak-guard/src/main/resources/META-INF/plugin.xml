@@ -1,0 +1,51 @@
+<idea-plugin>
+    <id>io.github.vadimtoptunov.leak-guard</id>
+    <name>Secret &amp; Card Leak Guard</name>
+    <vendor email="vtoptunov88@gmail.com" url="https://github.com/VadimToptunov/kassi-plugins">Vadim Toptunov</vendor>
+
+    <description><![CDATA[
+    <h2>Secret &amp; Card Leak Guard — catch real PII before it hits a commit</h2>
+    <p>
+    A background inspection that scans every file — code, fixtures, <code>.env</code>, JSON, logs — for
+    values that look like a <b>real</b> card number, IBAN, or US Social Security Number, and tells them
+    apart from safe test data the same way a payment gateway or the SSA itself does.
+    </p>
+    <ul>
+      <li><b>Card numbers</b> — Luhn-valid, but the BIN is <i>not</i> one of the well-known payment-gateway
+      test ranges (the same ranges Kassi Test Data generates from).</li>
+      <li><b>IBAN</b> — passes the ISO 7064 mod-97 check, but isn't one of Kassi's own reserved test IBANs.</li>
+      <li><b>US SSN</b> — structurally issuable (area/group/serial outside the SSA's never-issued ranges),
+      so it could plausibly be assigned to a real person.</li>
+    </ul>
+    <p>
+    Each finding comes with a one-click quick-fix: replace it with a synthetic, checksum-valid equivalent
+    drawn from a reserved test range — so re-scanning never re-flags the fix.
+    </p>
+    <p>100% offline and algorithmic. Zero network calls, zero data collection, nothing ever leaves your IDE.</p>
+    <p><b>Source, issues &amp; docs:</b> <a href="https://github.com/VadimToptunov/kassi-plugins">github.com/VadimToptunov/kassi-plugins</a></p>
+    ]]></description>
+
+    <change-notes><![CDATA[
+    <h3>1.0.0</h3>
+    <ul>
+      <li>Initial release: whole-file inspection for real-looking card numbers, IBANs and US SSNs, with a
+      one-click "replace with synthetic test data" quick-fix.</li>
+      <li>All detection/classification logic reuses the shared, tested :engine module.</li>
+    </ul>
+    ]]></change-notes>
+
+    <!-- Platform-only plugin: loads in IntelliJ IDEA, Android Studio and other IntelliJ-based IDEs. -->
+    <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <localInspection
+            language=""
+            shortName="KassiLeakGuard"
+            displayName="Possible real card number, IBAN, or SSN (Kassi Leak Guard)"
+            groupPath="Kassi DevTools"
+            groupName="Data leaks"
+            enabledByDefault="true"
+            level="WARNING"
+            implementationClass="io.github.vadimtoptunov.leakguard.inspection.LeakGuardInspection"/>
+    </extensions>
+</idea-plugin>

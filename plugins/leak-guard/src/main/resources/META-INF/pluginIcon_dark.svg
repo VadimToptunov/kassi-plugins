@@ -1,0 +1,15 @@
+<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="lgShieldDark" x1="8" y1="4" x2="32" y2="36" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FDBA74"/>
+      <stop offset="1" stop-color="#F87171"/>
+    </linearGradient>
+  </defs>
+  <!-- Shield: guarding, distinct silhouette from the other plugins' card/tile icons -->
+  <path d="M20 4l11 4v9c0 8-4.7 13.8-11 19-6.3-5.2-11-11-11-19V8l11-4z" fill="url(#lgShieldDark)"/>
+  <!-- Caught digits: two masked-out characters, the leak that got stopped -->
+  <rect x="13.5" y="17" width="4.6" height="7.4" rx="1.4" fill="#1F2937" fill-opacity="0.85"/>
+  <rect x="21.9" y="17" width="4.6" height="7.4" rx="1.4" fill="#1F2937" fill-opacity="0.85"/>
+  <!-- Alert dot beneath: something was flagged -->
+  <circle cx="20" cy="28.4" r="1.6" fill="#78350F"/>
+</svg>

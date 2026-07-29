@@ -1,0 +1,36 @@
+<idea-plugin>
+    <id>io.github.vadimtoptunov.checksum-playground</id>
+    <name>Checksum &amp; Regex Playground</name>
+    <vendor email="vtoptunov88@gmail.com" url="https://github.com/VadimToptunov/kassi-plugins">Vadim Toptunov</vendor>
+
+    <description><![CDATA[
+    <h2>Checksum &amp; Regex Playground</h2>
+    <p>
+    A tool window for QA / fintech / KYC engineers. Paste any identifier and instantly see which
+    real-world checks it passes — no browser, no guesswork, fully offline.
+    </p>
+    <ul>
+      <li><b>Checksums tab:</b> type or paste a value and it live-validates against every applicable
+      algorithm — IBAN (ISO 7064 mod-97), card Luhn, VAT (DE/GB/CY/NL), Dutch BSN, AU TFN/ABN,
+      BIC/SWIFT structure, GB NINo, German ID card (ICAO 7-3-1). Each check shows ✔ pass or ✘ fail.</li>
+      <li><b>Regex tab:</b> a live regular-expression tester — pattern + text → matches with capture groups
+      and positions, with clear syntax-error messages.</li>
+    </ul>
+    <p>Open it from <b>View ▸ Tool Windows ▸ Test Data Playground</b>. Uses the same validated engine as
+    the <i>Kassi Test Data</i> generator.</p>
+    ]]></description>
+
+    <change-notes><![CDATA[
+    <h3>1.0.0</h3><ul><li>Initial release: live checksum inspector + regex tester tool window.</li></ul>
+    ]]></change-notes>
+
+    <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <toolWindow id="Test Data Playground"
+                    anchor="right"
+                    secondary="true"
+                    factoryClass="io.github.vadimtoptunov.kassitestdata.playground.PlaygroundToolWindowFactory"
+                    icon="/icons/playground_toolwindow.svg"/>
+    </extensions>
+</idea-plugin>
