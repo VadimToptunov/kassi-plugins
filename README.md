@@ -1,5 +1,8 @@
 # Kassi Plugins
 
+[![Build](https://github.com/VadimToptunov/kassi-plugins/actions/workflows/build.yml/badge.svg)](https://github.com/VadimToptunov/kassi-plugins/actions/workflows/build.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 Open-source JetBrains / Android Studio plugins for QA, fintech and KYC engineering, built on **one
 shared, fully-tested data engine**. MIT-licensed.
 
@@ -9,12 +12,12 @@ tools that validate such data. Everything is 100% offline and algorithmic: zero 
 
 ## Plugins
 
-| Plugin | What it does |
-|--------|--------------|
-| **Checksum & Regex Playground** | Live-validate any pasted identifier against every applicable checksum, plus a regex tester. |
-| **MRZ & Barcode Inspector** | Parse & validate passport/ID MRZ (TD1/TD2/TD3) and AAMVA PDF417 payloads with per-field check digits. |
-| **Secret & Card Leak Guard** | Inspection that flags real PAN/IBAN/SSN leaking into code and fixtures, with a quick-fix to synthetic test data. |
-| **Kassi HTTP Data Injector** | Insert valid synthetic test data (PAN/IBAN/BIC/persona) into `.http` request files. |
+| Plugin | What it does | Marketplace |
+|--------|--------------|-------------|
+| **Checksum & Regex Playground** | Live-validate any pasted identifier against every applicable checksum, plus a regex tester. | [![Version](https://img.shields.io/jetbrains/plugin/v/33227.svg?label=marketplace)](https://plugins.jetbrains.com/plugin/33227-checksum--regex-playground) [![Downloads](https://img.shields.io/jetbrains/plugin/d/33227.svg)](https://plugins.jetbrains.com/plugin/33227-checksum--regex-playground) |
+| **MRZ & Barcode Inspector** | Parse & validate passport/ID MRZ (TD1/TD2/TD3) and AAMVA PDF417 payloads with per-field check digits. | _coming soon_ |
+| **Secret & Card Leak Guard** | Inspection that flags real PAN/IBAN/SSN leaking into code and fixtures, with a quick-fix to synthetic test data. | _coming soon_ |
+| **Kassi HTTP Data Injector** | Insert valid synthetic test data (PAN/IBAN/BIC/persona) into `.http` request files. | _coming soon_ |
 
 The related **[Kassi Test Data](https://plugins.jetbrains.com/plugin/33149-kassi-test-data)** generator
 is published separately.
