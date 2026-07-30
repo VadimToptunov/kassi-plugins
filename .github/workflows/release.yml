@@ -59,6 +59,10 @@ jobs:
       - name: Test the shared engine
         run: ./gradlew :engine:test --stacktrace
 
+      # Gate: fails the release before publishing if the module uses API scheduled for removal / incompatible.
+      - name: Verify ${{ steps.t.outputs.module }} (blocks publish on scheduled-for-removal API)
+        run: ./gradlew ":plugins:${{ steps.t.outputs.module }}:runPluginVerifier" -PpluginVersion=${{ steps.t.outputs.version }} --stacktrace
+
       - name: Publish ${{ steps.t.outputs.module }} ${{ steps.t.outputs.version }}
         env:
           PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
