@@ -30,12 +30,12 @@ jobs:
       - name: Test all modules
         run: ./gradlew test --stacktrace
 
-      - name: Verify & build every plugin
+      - name: Verify, check deprecated API & build every plugin
         run: |
           set -e
           for dir in plugins/*/; do
             name=$(basename "$dir")
-            ./gradlew ":plugins:${name}:verifyPlugin" ":plugins:${name}:buildPlugin" --stacktrace
+            ./gradlew ":plugins:${name}:verifyPlugin" ":plugins:${name}:runPluginVerifier" ":plugins:${name}:buildPlugin" --stacktrace
           done
 
       - name: Upload plugin distributions
