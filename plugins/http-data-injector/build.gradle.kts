@@ -6,7 +6,7 @@ plugins {
 }
 
 // Overridable at release time: -PhttpDataInjectorVersion=1.0.1
-version = (findProperty("httpDataInjectorVersion") as String?) ?: "1.0.0"
+version = (findProperty("pluginVersion") as String?) ?: "1.0.0"
 
 intellij {
     version.set("2023.2.6")

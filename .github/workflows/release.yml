@@ -1,0 +1,75 @@
+name: Release
+
+# Publish one plugin module to the JetBrains Marketplace.
+# Tag format: <plugin-module>-v<version>   e.g.  checksum-playground-v1.0.1
+# (the module must already be listed on the Marketplace; the first version of a new
+#  plugin is uploaded manually — see the marketplace-uploads cards.)
+#
+# Required secret: PUBLISH_TOKEN — JetBrains Marketplace token (account-level, one for all plugins).
+
+on:
+  push:
+    tags: [ '*-v*' ]
+  workflow_dispatch:
+    inputs:
+      plugin:
+        description: Plugin module (e.g. checksum-playground)
+        required: true
+      version:
+        description: Version without leading v (e.g. 1.0.1)
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Publish to Marketplace
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Resolve target module & version
+        id: t
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            module="${{ github.event.inputs.plugin }}"
+            version="${{ github.event.inputs.version }}"
+          else
+            tag="${GITHUB_REF_NAME}"      # e.g. checksum-playground-v1.0.1
+            module="${tag%-v*}"           # checksum-playground
+            version="${tag##*-v}"         # 1.0.1
+          fi
+          echo "module=$module" >> "$GITHUB_OUTPUT"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "Target: :plugins:$module @ $version"
+
+      - name: Verify module exists
+        run: test -d "plugins/${{ steps.t.outputs.module }}" || { echo "No plugin module '${{ steps.t.outputs.module }}'"; exit 1; }
+
+      - name: Test the shared engine
+        run: ./gradlew :engine:test --stacktrace
+
+      - name: Publish ${{ steps.t.outputs.module }} ${{ steps.t.outputs.version }}
+        env:
+          PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
+          CERTIFICATE_CHAIN: ${{ secrets.CERTIFICATE_CHAIN }}
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+          PRIVATE_KEY_PASSWORD: ${{ secrets.PRIVATE_KEY_PASSWORD }}
+        run: ./gradlew ":plugins:${{ steps.t.outputs.module }}:publishPlugin" -PpluginVersion=${{ steps.t.outputs.version }} --stacktrace
+
+      - name: Attach distribution to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: plugins/${{ steps.t.outputs.module }}/build/distributions/*.zip
+          generate_release_notes: true
