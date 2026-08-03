@@ -18,9 +18,14 @@
     </ul>
     <p>Open it from <b>View ▸ Tool Windows ▸ Test Data Playground</b>. Uses the same validated engine as
     the <i>Kassi Test Data</i> generator.</p>
+    <p><b>More Kassi tools for QA &amp; fintech:</b>
+    <a href="https://plugins.jetbrains.com/plugin/33149">Kassi Test Data</a> — generate valid IBANs, cards,
+    BIC/SWIFT, VAT and national IDs (the inverse of this validator).</p>
+    <p><b>Source, issues &amp; docs:</b> <a href="https://github.com/VadimToptunov/kassi-plugins">github.com/VadimToptunov/kassi-plugins</a></p>
     ]]></description>
 
     <change-notes><![CDATA[
+    <h3>1.0.1</h3><ul><li>Listing: link to the companion Kassi Test Data generator and the source repository. No functional changes.</li></ul>
     <h3>1.0.0</h3><ul><li>Initial release: live checksum inspector + regex tester tool window.</li></ul>
     ]]></change-notes>
 
