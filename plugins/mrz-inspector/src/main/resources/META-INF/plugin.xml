@@ -21,6 +21,10 @@
       subfile's data elements, or a precise structural error if the payload is malformed.</li>
     </ul>
     <p>100% offline and algorithmic. Zero network calls, zero data collection.</p>
+    <p><b>More Kassi tools for QA &amp; fintech:</b>
+    <a href="https://plugins.jetbrains.com/plugin/33149">Kassi Test Data</a> — generate valid IBANs, cards,
+    BIC/SWIFT, VAT and national IDs; and
+    <a href="https://plugins.jetbrains.com/plugin/33227">Checksum &amp; Regex Playground</a>.</p>
     <p><b>Source, issues &amp; docs:</b> <a href="https://github.com/VadimToptunov/kassi-plugins">github.com/VadimToptunov/kassi-plugins</a></p>
     ]]></description>
 

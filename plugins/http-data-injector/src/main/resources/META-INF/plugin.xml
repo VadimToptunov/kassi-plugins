@@ -22,6 +22,10 @@
     </p>
     <p><b>Usage:</b> in a <code>.http</code> file, press <b>Alt+Enter</b> for "Insert test data…", or right-click
     in the editor, search, pick, and it inserts at the caret.</p>
+    <p><b>More Kassi tools for QA &amp; fintech:</b>
+    <a href="https://plugins.jetbrains.com/plugin/33149">Kassi Test Data</a> — generate valid IBANs, cards,
+    BIC/SWIFT, VAT and national IDs; and
+    <a href="https://plugins.jetbrains.com/plugin/33227">Checksum &amp; Regex Playground</a>.</p>
     <p><b>Source, issues &amp; docs:</b> <a href="https://github.com/VadimToptunov/kassi-plugins">github.com/VadimToptunov/kassi-plugins</a></p>
     ]]></description>
 
