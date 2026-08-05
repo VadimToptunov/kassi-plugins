@@ -93,6 +93,29 @@ object Checksums {
         return sum % 10 == 0
     }
 
+    /** ISIN (ISO 6166): letters expand to two digits (A=10..Z=35), then Luhn over the string. */
+    fun isValidIsin(value: String): Boolean {
+        val s = value.uppercase()
+        if (!Regex("^[A-Z]{2}[A-Z0-9]{9}[0-9]$").matches(s)) return false
+        val expanded = buildString { for (c in s.take(11)) if (c in '0'..'9') append(c) else append(c - 'A' + 10) }
+        return luhnCheckDigit(expanded) == (s[11] - '0')
+    }
+
+    /** EAN-13 / GTIN-13 check digit (alternating 1,3 weights). */
+    fun isValidEan13(value: String): Boolean {
+        if (value.length != 13 || !value.all { it in '0'..'9' }) return false
+        var sum = 0
+        for (i in 0..11) sum += (value[i] - '0') * if (i % 2 == 0) 1 else 3
+        return (10 - sum % 10) % 10 == (value[12] - '0')
+    }
+
+    /** LEI (ISO 17442 / ISO 7064 MOD 97-10): 18 alnum + 2 check digits, whole thing ≡ 1 (mod 97). */
+    fun isValidLei(value: String): Boolean {
+        val s = value.uppercase()
+        if (!Regex("^[A-Z0-9]{18}[0-9]{2}$").matches(s)) return false
+        return mod97(toNumericString(s)) == 1
+    }
+
     // ---------------------------------------------------------------------
     // Dutch 11-proef — BSN (national ID) and legacy BTW/RSIN (tax).
     // ---------------------------------------------------------------------

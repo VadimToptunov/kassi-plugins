@@ -1,6 +1,7 @@
 package io.github.vadimtoptunov.kassitestdata.inspect
 
 import io.github.vadimtoptunov.kassitestdata.algo.Checksums
+import io.github.vadimtoptunov.kassitestdata.algo.RuIdChecksums
 import io.github.vadimtoptunov.kassitestdata.generators.BicGenerator
 import io.github.vadimtoptunov.kassitestdata.generators.NationalIdGenerator
 
@@ -65,6 +66,33 @@ object DataInspector {
         // GB NINo format.
         if (compact.length == 9 && compact[0].isLetter() && compact[1].isLetter()) {
             results["GB NINo — format"] = NationalIdGenerator.isValidNino(compact)
+        }
+
+        // ISIN — 2-letter country + 9-char NSIN + a check digit.
+        if (compact.length == 12 && compact[0].isLetter() && compact[1].isLetter() && compact.last().isDigit()) {
+            results["ISIN — ISO 6166 (Luhn)"] = Checksums.isValidIsin(compact)
+        }
+
+        // LEI — 20 alphanumerics ending in two check digits.
+        if (compact.length == 20 && compact.all { it in '0'..'9' || it in 'A'..'Z' }) {
+            results["LEI — ISO 17442 (MOD 97-10)"] = Checksums.isValidLei(compact)
+        }
+
+        // EAN-13 / GTIN and IMEI — pure-digit product / device identifiers.
+        if (digitsOnly && compact.length == 13) {
+            results["EAN-13 — product barcode"] = Checksums.isValidEan13(compact)
+        }
+        if (digitsOnly && compact.length == 15) {
+            results["IMEI — device (Luhn)"] = Checksums.isLuhnValid(compact)
+        }
+
+        // Russian identifiers (digit strings of characteristic lengths).
+        if (digitsOnly) when (compact.length) {
+            10 -> results["RU ИНН (юр. лицо) — weighted mod-11"] = RuIdChecksums.isValidInnLegal(compact)
+            11 -> results["RU СНИЛС — weighted mod-101"] = RuIdChecksums.isValidSnils(compact)
+            12 -> results["RU ИНН (физ. лицо) — weighted mod-11"] = RuIdChecksums.isValidInnIndividual(compact)
+            13 -> results["RU ОГРН — mod-11"] = RuIdChecksums.isValidOgrn(compact)
+            15 -> results["RU ОГРНИП — mod-13"] = RuIdChecksums.isValidOgrnip(compact)
         }
 
         // VAT numbers carrying a country prefix (e.g. DE123456789, CY10259033P).

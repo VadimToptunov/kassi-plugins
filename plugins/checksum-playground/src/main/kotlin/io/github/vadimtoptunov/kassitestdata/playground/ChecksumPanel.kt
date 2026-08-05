@@ -25,7 +25,7 @@ class ChecksumPanel : JPanel(BorderLayout()) {
         border = JBUI.Borders.empty(8)
 
         val header = JPanel(BorderLayout()).apply {
-            add(JBLabel("Paste a value (IBAN, card, VAT, BSN, ABN, BIC, NINo…):"), BorderLayout.NORTH)
+            add(JBLabel("Paste a value (IBAN, card, VAT, ISIN, IMEI, EAN, LEI, ИНН, СНИЛС, ОГРН…):"), BorderLayout.NORTH)
             add(input, BorderLayout.CENTER)
         }
         add(header, BorderLayout.NORTH)

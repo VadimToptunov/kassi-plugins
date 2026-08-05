@@ -38,6 +38,20 @@ class DataInspectorTest {
     }
 
     @Test
+    fun `validates the newly-covered identifiers`() {
+        assertTrue(passed("US0378331005", "ISIN")) // Apple
+        assertFalse(passed("US0378331004", "ISIN"))
+        assertTrue(passed("5493001KJTIIGC8Y1R12", "LEI")) // real published LEI
+        assertTrue(passed("5901234123457", "EAN-13"))
+        assertFalse(passed("5901234123450", "EAN-13"))
+        assertTrue(passed("490154203237518", "IMEI")) // classic valid test IMEI
+        assertTrue(passed("7830002293", "ИНН (юр")) // INN, legal entity
+        assertTrue(passed("500100732259", "ИНН (физ")) // INN, individual
+        assertTrue(passed("11223344595", "СНИЛС"))
+        assertTrue(passed("1027700132195", "ОГРН")) // Sberbank
+    }
+
+    @Test
     fun `empty or junk input yields no applicable checks`() {
         assertTrue(DataInspector.inspect("").isEmpty())
         assertTrue(DataInspector.inspect("!!!").isEmpty())
