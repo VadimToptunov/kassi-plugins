@@ -10,7 +10,7 @@
     real-world checks it passes — no browser, no guesswork, fully offline.
     </p>
     <ul>
-      <li><b>Checksums tab:</b> type or paste a value and it live-validates against every applicable
+      <li><b>Checksums tab:</b> pick a type to load a valid example (or type / paste your own) and it live-validates against every applicable
       algorithm — IBAN (ISO 7064 mod-97), card Luhn, VAT (DE/GB/CY/NL), Dutch BSN, AU TFN/ABN,
       BIC/SWIFT, GB NINo, German ID card (ICAO 7-3-1), <b>ISIN, IMEI, EAN-13, LEI</b>, and the Russian
       <b>ИНН, СНИЛС, ОГРН, ОГРНИП</b>. Each check shows ✔ pass or ✘ fail.</li>
@@ -26,6 +26,7 @@
     ]]></description>
 
     <change-notes><![CDATA[
+    <h3>1.1.0</h3><ul><li>Type picker in the Checksums tab: choose a type (IBAN, card, ISIN, IMEI, EAN, LEI, ИНН, СНИЛС, ОГРН…) to load a valid example, instead of guessing from a hint. Pasting your own value still works.</li></ul>
     <h3>1.0.2</h3><ul><li>More checks: <b>ISIN</b> (ISO 6166), <b>IMEI</b>, <b>EAN-13</b>, <b>LEI</b>, and Russian <b>ИНН</b> (individual &amp; legal), <b>СНИЛС</b>, <b>ОГРН</b>, <b>ОГРНИП</b> — the validator now covers far more of what Kassi Test Data generates.</li></ul>
     <h3>1.0.1</h3><ul><li>Listing: link to the companion Kassi Test Data generator and the source repository. No functional changes.</li></ul>
     <h3>1.0.0</h3><ul><li>Initial release: live checksum inspector + regex tester tool window.</li></ul>

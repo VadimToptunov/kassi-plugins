@@ -1,5 +1,6 @@
 package io.github.vadimtoptunov.kassitestdata.playground
 
+import com.intellij.openapi.ui.ComboBox
 import com.intellij.ui.DocumentAdapter
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
@@ -12,7 +13,7 @@ import javax.swing.BoxLayout
 import javax.swing.JPanel
 import javax.swing.event.DocumentEvent
 
-/** Live checksum inspector: type/paste a value, see every applicable check pass or fail. */
+/** Live checksum inspector: pick a type to load a valid example, or paste your own — see every applicable check pass or fail. */
 class ChecksumPanel : JPanel(BorderLayout()) {
 
     private val input = JBTextField()
@@ -24,9 +25,25 @@ class ChecksumPanel : JPanel(BorderLayout()) {
     init {
         border = JBUI.Borders.empty(8)
 
-        val header = JPanel(BorderLayout()).apply {
-            add(JBLabel("Paste a value (IBAN, card, VAT, ISIN, IMEI, EAN, LEI, ИНН, СНИЛС, ОГРН…):"), BorderLayout.NORTH)
+        val typePicker = ComboBox<String>().apply {
+            addItem(PLACEHOLDER)
+            EXAMPLES.forEach { addItem(it.first) }
+            addActionListener {
+                val i = selectedIndex
+                if (i > 0) {
+                    input.text = EXAMPLES[i - 1].second
+                    selectedIndex = 0 // reset so the same type can be picked again
+                }
+            }
+        }
+
+        val row = JPanel(BorderLayout(6, 0)).apply {
+            add(typePicker, BorderLayout.WEST)
             add(input, BorderLayout.CENTER)
+        }
+        val header = JPanel(BorderLayout(0, 4)).apply {
+            add(JBLabel("Pick a type to load a valid example, or paste your own value:"), BorderLayout.NORTH)
+            add(row, BorderLayout.CENTER)
         }
         add(header, BorderLayout.NORTH)
         add(JBScrollPane(results), BorderLayout.CENTER)
@@ -41,7 +58,7 @@ class ChecksumPanel : JPanel(BorderLayout()) {
         results.removeAll()
         val checks = DataInspector.inspect(input.text)
         if (checks.isEmpty()) {
-            results.add(JBLabel("No applicable checks yet — type a value above.").apply {
+            results.add(JBLabel("No applicable checks yet — pick a type above or paste a value.").apply {
                 border = JBUI.Borders.empty(4, 0)
                 foreground = JBColor.GRAY
             })
@@ -55,5 +72,30 @@ class ChecksumPanel : JPanel(BorderLayout()) {
         }
         results.revalidate()
         results.repaint()
+    }
+
+    private companion object {
+        const val PLACEHOLDER = "Load an example…"
+
+        // Label → a valid example value (verified against the engine's checks).
+        val EXAMPLES: List<Pair<String, String>> = listOf(
+            "IBAN (GB)" to "GB82 WEST 1234 5698 7654 32",
+            "Card (Luhn)" to "4242 4242 4242 4242",
+            "ISIN" to "US0378331005",
+            "IMEI" to "490154203237518",
+            "EAN-13" to "5901234123457",
+            "LEI" to "5493001KJTIIGC8Y1R12",
+            "BIC / SWIFT" to "DEUTDEFF",
+            "NL BSN" to "123456782",
+            "AU TFN" to "123456782",
+            "AU ABN" to "51824753556",
+            "DE VAT" to "DE136695976",
+            "CY VAT" to "CY10259033P",
+            "GB NINo" to "AA123456C",
+            "RU ИНН (юр.)" to "7830002293",
+            "RU ИНН (физ.)" to "500100732259",
+            "RU СНИЛС" to "112-233-445 95",
+            "RU ОГРН" to "1027700132195",
+        )
     }
 }
