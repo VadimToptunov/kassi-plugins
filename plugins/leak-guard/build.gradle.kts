@@ -17,6 +17,7 @@ intellij {
 
 dependencies {
     implementation(project(":engine")) // the shared, tested data engine is bundled into the plugin
+    testImplementation("junit:junit:4.13.2") // BasePlatformTestCase is a JUnit4-run platform test
 }
 
 kotlin {
