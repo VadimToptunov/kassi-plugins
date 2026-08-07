@@ -1,0 +1,37 @@
+<idea-plugin>
+    <id>io.github.vadimtoptunov.uuid-toolkit</id>
+    <name>UUID, ULID &amp; NanoID Toolkit</name>
+    <vendor email="vtoptunov88@gmail.com" url="https://github.com/VadimToptunov/kassi-plugins">Vadim Toptunov</vendor>
+
+    <description><![CDATA[
+    <h2>UUID, ULID &amp; NanoID Toolkit</h2>
+    <p>
+    Generate and inspect the identifiers you actually use in tests and APIs — no browser, no external
+    tool, fully offline.
+    </p>
+    <ul>
+      <li><b>Generate:</b> <b>UUID v4</b> (random) and <b>v7</b> (time-ordered), <b>ULID</b>, and <b>NanoID</b>
+      — one click each, appended to a list you can select and copy.</li>
+      <li><b>Inspect:</b> paste any value and see what it is — the UUID <b>version</b> and <b>variant</b>,
+      and the embedded <b>timestamp</b> for UUID v7 and ULID (decoded to a readable instant).</li>
+    </ul>
+    <p>Open it from <b>View ▸ Tool Windows ▸ ID Toolkit</b>.</p>
+    <p><b>More Kassi tools for QA &amp; fintech:</b>
+    <a href="https://plugins.jetbrains.com/plugin/33149">Kassi Test Data</a> — generate valid IBANs, cards,
+    BIC/SWIFT, VAT and national IDs.</p>
+    <p><b>Source, issues &amp; docs:</b> <a href="https://github.com/VadimToptunov/kassi-plugins">github.com/VadimToptunov/kassi-plugins</a></p>
+    ]]></description>
+
+    <change-notes><![CDATA[
+    <h3>1.0.0</h3><ul><li>Initial release: generate UUID v4/v7, ULID and NanoID, and inspect any of them (version, variant, embedded timestamp) — offline.</li></ul>
+    ]]></change-notes>
+
+    <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <toolWindow id="ID Toolkit"
+                    anchor="right"
+                    secondary="true"
+                    factoryClass="io.github.vadimtoptunov.uuidtoolkit.UuidToolkitToolWindowFactory"/>
+    </extensions>
+</idea-plugin>
