@@ -17,6 +17,8 @@ intellij {
 
 dependencies {
     implementation(project(":engine"))
+    testImplementation(kotlin("test"))
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
 }
 
 kotlin {
@@ -27,6 +29,10 @@ tasks {
     withType<JavaCompile> {
         sourceCompatibility = "17"
         targetCompatibility = "17"
+    }
+
+    test {
+        useJUnitPlatform()
     }
 
     patchPluginXml {

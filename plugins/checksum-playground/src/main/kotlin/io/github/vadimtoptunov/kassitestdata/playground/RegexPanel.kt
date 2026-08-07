@@ -1,45 +1,79 @@
 package io.github.vadimtoptunov.kassitestdata.playground
 
+import com.intellij.openapi.ui.ComboBox
 import com.intellij.ui.DocumentAdapter
 import com.intellij.ui.JBColor
+import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextArea
 import com.intellij.ui.components.JBTextField
 import com.intellij.util.ui.JBUI
 import java.awt.BorderLayout
+import java.awt.FlowLayout
 import java.awt.GridLayout
 import java.util.regex.PatternSyntaxException
 import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.event.DocumentEvent
 
-/** A small live regex tester: pattern + test text → matches (with capture groups). */
+/** A live regex tester: pattern (+ flags, ready-made library) → matches with groups, plus regex replace. */
 class RegexPanel : JPanel(BorderLayout()) {
 
     private val pattern = JBTextField()
+    private val replacement = JBTextField()
     private val testText = JBTextArea(6, 40).apply { lineWrap = true; wrapStyleWord = true }
-    private val output = JBTextArea().apply { isEditable = false; lineWrap = true }
+    private val matchesOut = JBTextArea().apply { isEditable = false; lineWrap = true }
+    private val replaceOut = JBTextArea().apply { isEditable = false; lineWrap = true }
+
+    private val ignoreCase = JBCheckBox("Ignore case")
+    private val multiline = JBCheckBox("Multiline (^ \$)")
+    private val dotAll = JBCheckBox("Dot matches newline")
+    private val comments = JBCheckBox("Extended (ignore whitespace)")
 
     init {
         border = JBUI.Borders.empty(8)
 
-        val north = JPanel(BorderLayout()).apply {
-            add(JBLabel("Regex pattern:"), BorderLayout.NORTH)
+        val library = ComboBox<String>().apply {
+            addItem(PLACEHOLDER)
+            RegexLibrary.PATTERNS.forEach { addItem(it.first) }
+            addActionListener {
+                val i = selectedIndex
+                if (i > 0) {
+                    pattern.text = RegexLibrary.PATTERNS[i - 1].second
+                    selectedIndex = 0 // reset so the same entry can be picked again
+                }
+            }
+        }
+
+        val patternRow = JPanel(BorderLayout(6, 0)).apply {
+            add(library, BorderLayout.WEST)
             add(pattern, BorderLayout.CENTER)
         }
-        val center = JPanel(GridLayout(2, 1, 0, 8)).apply {
+        val flagsRow = JPanel(FlowLayout(FlowLayout.LEFT, 8, 0)).apply {
+            add(ignoreCase); add(multiline); add(dotAll); add(comments)
+        }
+        val north = JPanel(BorderLayout(0, 4)).apply {
+            add(labeled("Regex pattern (pick a ready-made one or type your own):", patternRow), BorderLayout.NORTH)
+            add(flagsRow, BorderLayout.CENTER)
+            add(labeled("Replace with (\$1 for groups; leave empty to only match):", replacement), BorderLayout.SOUTH)
+        }
+
+        val center = JPanel(GridLayout(3, 1, 0, 8)).apply {
             add(labeled("Test text:", JBScrollPane(testText)))
-            add(labeled("Matches:", JBScrollPane(output)))
+            add(labeled("Matches:", JBScrollPane(matchesOut)))
+            add(labeled("Replace result:", JBScrollPane(replaceOut)))
         }
         add(north, BorderLayout.NORTH)
         add(center, BorderLayout.CENTER)
 
-        val listener = object : DocumentAdapter() {
+        val docListener = object : DocumentAdapter() {
             override fun textChanged(e: DocumentEvent) = refresh()
         }
-        pattern.document.addDocumentListener(listener)
-        testText.document.addDocumentListener(listener)
+        pattern.document.addDocumentListener(docListener)
+        replacement.document.addDocumentListener(docListener)
+        testText.document.addDocumentListener(docListener)
+        listOf(ignoreCase, multiline, dotAll, comments).forEach { it.addActionListener { refresh() } }
         refresh()
     }
 
@@ -49,23 +83,32 @@ class RegexPanel : JPanel(BorderLayout()) {
             add(component, BorderLayout.CENTER)
         }
 
+    private fun selectedOptions(): Set<RegexOption> = buildSet {
+        if (ignoreCase.isSelected) add(RegexOption.IGNORE_CASE)
+        if (multiline.isSelected) add(RegexOption.MULTILINE)
+        if (dotAll.isSelected) add(RegexOption.DOT_MATCHES_ALL)
+        if (comments.isSelected) add(RegexOption.COMMENTS)
+    }
+
     private fun refresh() {
         val patternText = pattern.text
         if (patternText.isEmpty()) {
-            output.foreground = JBColor.GRAY
-            output.text = "Enter a pattern above."
+            matchesOut.foreground = JBColor.GRAY
+            matchesOut.text = "Enter a pattern above."
+            replaceOut.text = ""
             return
         }
         val regex = try {
-            Regex(patternText)
+            Regex(patternText, selectedOptions())
         } catch (e: PatternSyntaxException) {
-            output.foreground = JBColor(0xC62828, 0xEF5350)
-            output.text = "Invalid pattern: ${e.description}"
+            matchesOut.foreground = JBColor(0xC62828, 0xEF5350)
+            matchesOut.text = "Invalid pattern: ${e.description}"
+            replaceOut.text = ""
             return
         }
         val matches = regex.findAll(testText.text).toList()
-        output.foreground = JBColor.foreground()
-        output.text = if (matches.isEmpty()) {
+        matchesOut.foreground = JBColor.foreground()
+        matchesOut.text = if (matches.isEmpty()) {
             "No matches."
         } else {
             buildString {
@@ -80,5 +123,19 @@ class RegexPanel : JPanel(BorderLayout()) {
                 }
             }
         }
+        replaceOut.text = if (replacement.text.isEmpty()) {
+            ""
+        } else {
+            try {
+                regex.replace(testText.text, replacement.text)
+            } catch (e: RuntimeException) {
+                // e.g. a $N group reference that doesn't exist in the pattern.
+                "Invalid replacement: ${e.message}"
+            }
+        }
+    }
+
+    private companion object {
+        const val PLACEHOLDER = "Load a pattern…"
     }
 }
