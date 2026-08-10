@@ -258,4 +258,81 @@ object Checksums {
         if (!serial.all { it in '0'..'9' || it in 'A'..'Z' }) return false
         return icao731CheckDigit(serial) == (check - '0')
     }
+
+    // ---------------------------------------------------------------------
+    // VIN (ISO 3779 / NHTSA) — 17 chars, weighted mod-11 check character at position 9.
+    // ---------------------------------------------------------------------
+
+    private val VIN_TRANSLIT: Map<Char, Int> = mapOf(
+        'A' to 1, 'B' to 2, 'C' to 3, 'D' to 4, 'E' to 5, 'F' to 6, 'G' to 7, 'H' to 8,
+        'J' to 1, 'K' to 2, 'L' to 3, 'M' to 4, 'N' to 5, 'P' to 7, 'R' to 9,
+        'S' to 2, 'T' to 3, 'U' to 4, 'V' to 5, 'W' to 6, 'X' to 7, 'Y' to 8, 'Z' to 9,
+    )
+    private val VIN_WEIGHTS = intArrayOf(8, 7, 6, 5, 4, 3, 2, 10, 0, 9, 8, 7, 6, 5, 4, 3, 2)
+
+    private fun vinValue(c: Char): Int =
+        if (c in '0'..'9') c - '0' else VIN_TRANSLIT[c] ?: throw IllegalArgumentException("Illegal VIN char '$c'")
+
+    /** VIN check character (position 9): weighted sum mod 11, where a remainder of 10 is written as 'X'. */
+    fun vinCheckChar(seventeen: String): Char {
+        var sum = 0
+        for (i in 0 until 17) sum += vinValue(seventeen[i]) * VIN_WEIGHTS[i]
+        val r = sum % 11
+        return if (r == 10) 'X' else ('0' + r)
+    }
+
+    /** Validate a full 17-char VIN by its position-9 check character. */
+    fun isValidVin(vin: String): Boolean {
+        val s = vin.uppercase()
+        if (s.length != 17) return false
+        if (s.any { it == 'I' || it == 'O' || it == 'Q' }) return false
+        if (!s.all { it in '0'..'9' || it in 'A'..'Z' }) return false
+        return vinCheckChar(s) == s[8]
+    }
+
+    // ---------------------------------------------------------------------
+    // ISBN-10 — mod-11 check character (ISBN-13 is EAN-13, see isValidEan13).
+    // ---------------------------------------------------------------------
+
+    /** ISBN-10 check character: weights 10..2 over the first 9 digits; (11 - sum%11)%11, with 10 → 'X'. */
+    fun isbn10CheckChar(firstNine: String): Char {
+        var sum = 0
+        for (i in 0 until 9) sum += (firstNine[i] - '0') * (10 - i)
+        val c = (11 - (sum % 11)) % 11
+        return if (c == 10) 'X' else ('0' + c)
+    }
+
+    /** Validate a full ISBN-10 (hyphens/spaces ignored): 9 digits + mod-11 check character (digit or 'X'). */
+    fun isValidIsbn10(value: String): Boolean {
+        val s = value.replace("-", "").replace(" ", "").uppercase()
+        if (s.length != 10) return false
+        if (!s.substring(0, 9).all { it in '0'..'9' }) return false
+        val last = s[9]
+        if (last !in '0'..'9' && last != 'X') return false
+        return isbn10CheckChar(s.substring(0, 9)) == last
+    }
+
+    // ---------------------------------------------------------------------
+    // JMBG — ex-Yugoslav 13-digit citizen number (RS/SI/ME/MK/BA), weighted mod-11.
+    // ---------------------------------------------------------------------
+
+    private val JMBG_WEIGHTS = intArrayOf(7, 6, 5, 4, 3, 2, 7, 6, 5, 4, 3, 2)
+
+    /** JMBG check digit for the first 12 digits: m = 11 - (Σ digit·weight mod 11); 11→0, 10→null (unassignable). */
+    fun jmbgCheckDigit(first12: String): Int? {
+        var sum = 0
+        for (i in 0 until 12) sum += (first12[i] - '0') * JMBG_WEIGHTS[i]
+        return when (val m = 11 - (sum % 11)) {
+            11 -> 0
+            10 -> null
+            else -> m
+        }
+    }
+
+    /** Validate a full 13-digit JMBG by its check digit. */
+    fun isValidJmbg(value: String): Boolean {
+        if (value.length != 13 || !value.all { it in '0'..'9' }) return false
+        val check = jmbgCheckDigit(value.substring(0, 12)) ?: return false
+        return check == (value[12] - '0')
+    }
 }

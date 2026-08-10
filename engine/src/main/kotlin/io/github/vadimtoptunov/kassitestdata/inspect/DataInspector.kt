@@ -1,6 +1,7 @@
 package io.github.vadimtoptunov.kassitestdata.inspect
 
 import io.github.vadimtoptunov.kassitestdata.algo.Checksums
+import io.github.vadimtoptunov.kassitestdata.algo.CryptoChecksums
 import io.github.vadimtoptunov.kassitestdata.algo.RuIdChecksums
 import io.github.vadimtoptunov.kassitestdata.generators.BicGenerator
 import io.github.vadimtoptunov.kassitestdata.generators.NationalIdGenerator
@@ -18,6 +19,8 @@ object DataInspector {
     fun inspect(raw: String): List<CheckResult> {
         val compact = raw.trim().replace(" ", "").replace("-", "").uppercase()
         if (compact.isEmpty()) return emptyList()
+        // Crypto addresses are case-sensitive (Base58 / EIP-55), so they use the raw input, not [compact].
+        val rawTrimmed = raw.trim()
 
         val results = LinkedHashMap<String, Boolean>()
         val digitsOnly = compact.all { it in '0'..'9' }
@@ -81,9 +84,33 @@ object DataInspector {
         // EAN-13 / GTIN and IMEI — pure-digit product / device identifiers.
         if (digitsOnly && compact.length == 13) {
             results["EAN-13 — product barcode"] = Checksums.isValidEan13(compact)
+            if (compact.startsWith("978") || compact.startsWith("979")) {
+                results["ISBN-13 — book (EAN-13 check)"] = Checksums.isValidEan13(compact)
+            }
+            results["JMBG — ex-Yugoslav ID (mod-11)"] = Checksums.isValidJmbg(compact)
         }
         if (digitsOnly && compact.length == 15) {
             results["IMEI — device (Luhn)"] = Checksums.isLuhnValid(compact)
+        }
+
+        // VIN — 17 alphanumerics (no I/O/Q), weighted mod-11 check character.
+        if (compact.length == 17 && compact.all { it in '0'..'9' || it in 'A'..'Z' }) {
+            results["VIN — vehicle (ISO 3779)"] = Checksums.isValidVin(compact)
+        }
+
+        // ISBN-10 — 9 digits + a mod-11 check character (digit or X).
+        if (compact.length == 10 && compact.take(9).all { it in '0'..'9' } &&
+            (compact[9] in '0'..'9' || compact[9] == 'X')
+        ) {
+            results["ISBN-10 — book (mod-11)"] = Checksums.isValidIsbn10(compact)
+        }
+
+        // Crypto addresses — case-sensitive, so checked against the raw input.
+        if (rawTrimmed.length in 26..35 && (rawTrimmed.startsWith("1") || rawTrimmed.startsWith("3"))) {
+            results["Bitcoin address — Base58Check"] = CryptoChecksums.isValidBase58Check(rawTrimmed)
+        }
+        if (Regex("^0x[0-9a-fA-F]{40}$").matches(rawTrimmed)) {
+            results["Ethereum address — EIP-55"] = CryptoChecksums.isValidEip55(rawTrimmed)
         }
 
         // Russian identifiers (digit strings of characteristic lengths).

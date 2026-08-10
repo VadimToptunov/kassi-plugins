@@ -12,7 +12,8 @@
     <ul>
       <li><b>Checksums tab:</b> pick a type to load a valid example (or type / paste your own) and it live-validates against every applicable
       algorithm — IBAN (ISO 7064 mod-97), card Luhn, VAT (DE/GB/CY/NL), Dutch BSN, AU TFN/ABN,
-      BIC/SWIFT, GB NINo, German ID card (ICAO 7-3-1), <b>ISIN, IMEI, EAN-13, LEI</b>, and the Russian
+      BIC/SWIFT, GB NINo, German ID card (ICAO 7-3-1), <b>ISIN, IMEI, EAN-13, LEI, VIN, ISBN-10/13,
+      JMBG</b>, crypto addresses (<b>Bitcoin</b> Base58Check, <b>Ethereum</b> EIP-55), and the Russian
       <b>ИНН, СНИЛС, ОГРН, ОГРНИП</b>. Each check shows ✔ pass or ✘ fail.</li>
       <li><b>Regex tab:</b> a live regular-expression tester — pattern + text → matches with capture groups
       and positions, with clear syntax-error messages. Toggle flags (ignore-case, multiline, dot-all,
@@ -28,6 +29,7 @@
     ]]></description>
 
     <change-notes><![CDATA[
+    <h3>1.3.0</h3><ul><li>Parity with the generator: the Checksums tab now validates <b>VIN</b> (ISO 3779), <b>ISBN-10/13</b>, <b>JMBG</b> (ex-Yugoslav ID), and crypto addresses — <b>Bitcoin</b> (Base58Check) and <b>Ethereum</b> (EIP-55, real Keccak-256) — all available in the type picker too.</li></ul>
     <h3>1.2.0</h3><ul><li>Regex tab upgrade: <b>flags</b> (ignore-case, multiline, dot-all, extended), a <b>ready-made pattern library</b> (email, IPv4, URL, UUID, ISO date, hex colour…), and a live <b>replace</b> with <code>$1</code> group references.</li></ul>
     <h3>1.1.0</h3><ul><li>Type picker in the Checksums tab: choose a type (IBAN, card, ISIN, IMEI, EAN, LEI, ИНН, СНИЛС, ОГРН…) to load a valid example, instead of guessing from a hint. Pasting your own value still works.</li></ul>
     <h3>1.0.2</h3><ul><li>More checks: <b>ISIN</b> (ISO 6166), <b>IMEI</b>, <b>EAN-13</b>, <b>LEI</b>, and Russian <b>ИНН</b> (individual &amp; legal), <b>СНИЛС</b>, <b>ОГРН</b>, <b>ОГРНИП</b> — the validator now covers far more of what Kassi Test Data generates.</li></ul>
