@@ -68,6 +68,7 @@ class MrzPanel : JPanel(BorderLayout()) {
 
     private fun StringBuilder.appendField(label: String, field: MrzInspector.FieldCheck) {
         val mark = if (field.valid) "✓" else "✗"
-        appendLine("$mark $label: \"${field.value}\" check digit '${field.checkDigit}'")
+        val fix = if (field.valid) "" else " — expected '${field.expectedCheckDigit}'"
+        appendLine("$mark $label: \"${field.value}\" check digit '${field.checkDigit}'$fix")
     }
 }

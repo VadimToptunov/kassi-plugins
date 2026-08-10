@@ -29,6 +29,10 @@
     ]]></description>
 
     <change-notes><![CDATA[
+    <h3>1.1.0</h3>
+    <ul>
+      <li>When a check digit is wrong, the MRZ tab now shows the <b>expected</b> digit (e.g. <code>check digit '5' — expected '6'</code>) so you can fix the MRZ, not just see that it's broken.</li>
+    </ul>
     <h3>1.0.0</h3>
     <ul>
       <li>Initial release: MRZ tab (TD1/TD2/TD3, per-field + composite check digits) and Barcode tab (AAMVA PDF417 payload parsing).</li>

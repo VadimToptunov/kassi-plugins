@@ -43,6 +43,7 @@ class MrzInspectorTest {
         val r = outcome.result
 
         assertFalse(r.documentNumber.valid)
+        assertEquals('6', r.documentNumber.expectedCheckDigit) // the inspector reports the correct digit
         assertTrue(r.dateOfBirth.valid)
         assertTrue(r.expiryDate.valid)
         assertFalse(r.allChecksValid)

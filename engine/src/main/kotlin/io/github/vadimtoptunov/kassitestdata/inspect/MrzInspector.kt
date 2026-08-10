@@ -18,7 +18,13 @@ object MrzInspector {
     }
 
     /** One check-digit-bearing field: its raw value, the check-digit character read from the MRZ, and the verdict. */
-    data class FieldCheck(val name: String, val value: String, val checkDigit: Char, val valid: Boolean)
+    data class FieldCheck(
+        val name: String,
+        val value: String,
+        val checkDigit: Char,
+        val valid: Boolean,
+        val expectedCheckDigit: Char,
+    )
 
     data class MrzResult(
         val format: Format,
@@ -67,12 +73,13 @@ object MrzInspector {
     }
 
     private fun fieldCheck(name: String, value: String, checkDigitChar: Char): FieldCheck {
+        val expected = '0' + Checksums.icao731CheckDigit(value) // the digit the value should carry
         val valid = when {
             checkDigitChar in '0'..'9' -> Checksums.icao731CheckDigit(value) == (checkDigitChar - '0')
             checkDigitChar == '<' && value.all { it == '<' } -> true
             else -> false
         }
-        return FieldCheck(name, value, checkDigitChar, valid)
+        return FieldCheck(name, value, checkDigitChar, valid, expected)
     }
 
     private fun parseName(nameField: String): Pair<String, String> {
