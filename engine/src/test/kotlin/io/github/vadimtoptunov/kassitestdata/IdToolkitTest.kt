@@ -11,6 +11,17 @@ import org.junit.jupiter.api.Test
 class IdToolkitTest {
 
     @Test
+    fun `name-based UUID v5 and v3 reference values (Python uuid docs)`() {
+        // uuid5(NAMESPACE_DNS, 'python.org') and uuid3(NAMESPACE_DNS, 'python.org').
+        assertEquals("886313e1-3b8a-5372-9b90-0c9aee199e5d", IdToolkit.uuidV5(IdToolkit.Namespace.DNS, "python.org"))
+        assertEquals("6fa459ea-ee8a-3ca4-894e-db77e160355e", IdToolkit.uuidV3(IdToolkit.Namespace.DNS, "python.org"))
+        // deterministic + correctly versioned
+        assertEquals(IdToolkit.uuidV5(IdToolkit.Namespace.URL, "x"), IdToolkit.uuidV5(IdToolkit.Namespace.URL, "x"))
+        assertEquals(5, IdToolkit.inspectUuid(IdToolkit.uuidV5(IdToolkit.Namespace.DNS, "a"))!!.version)
+        assertEquals(3, IdToolkit.inspectUuid(IdToolkit.uuidV3(IdToolkit.Namespace.DNS, "a"))!!.version)
+    }
+
+    @Test
     fun `UUID reference values (RFC 9562)`() {
         val v7 = IdToolkit.inspectUuid("017F22E2-79B0-7CC3-98C4-DC0C0C07398F")!!
         assertEquals(7, v7.version)
