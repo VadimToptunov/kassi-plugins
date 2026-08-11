@@ -1,5 +1,6 @@
 package io.github.vadimtoptunov.uuidtoolkit
 
+import com.intellij.openapi.ui.ComboBox
 import com.intellij.ui.DocumentAdapter
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
@@ -12,6 +13,7 @@ import io.github.vadimtoptunov.kassitestdata.generators.IdToolkit
 import java.awt.BorderLayout
 import java.awt.FlowLayout
 import java.time.Instant
+import javax.swing.BoxLayout
 import javax.swing.JButton
 import javax.swing.JComponent
 import javax.swing.JPanel
@@ -39,9 +41,29 @@ class UuidToolkitPanel : JPanel(BorderLayout()) {
             add(JButton("Clear").apply { addActionListener { output.text = "" } })
         }
 
+        // Name-based UUIDs (v5 SHA-1 / v3 MD5): deterministic from a namespace + name.
+        val nsPicker = ComboBox(IdToolkit.Namespace.entries.toTypedArray())
+        val nameField = JBTextField(16)
+        fun nameBased(v: (IdToolkit.Namespace, String) -> String) {
+            val name = nameField.text
+            if (name.isNotEmpty()) output.append(v(nsPicker.item, name) + "\n")
+        }
+        val nsRow = JPanel(FlowLayout(FlowLayout.LEFT, 6, 0)).apply {
+            add(JBLabel("Name-based:"))
+            add(nsPicker)
+            add(nameField)
+            add(JButton("v5").apply { addActionListener { nameBased(IdToolkit::uuidV5) } })
+            add(JButton("v3").apply { addActionListener { nameBased(IdToolkit::uuidV3) } })
+        }
+        val controls = JPanel().apply {
+            layout = BoxLayout(this, BoxLayout.Y_AXIS)
+            add(buttons)
+            add(nsRow)
+        }
+
         val top = JPanel(BorderLayout(0, 4)).apply {
             add(JBLabel("Generate (click to append; select text to copy):"), BorderLayout.NORTH)
-            add(buttons, BorderLayout.CENTER)
+            add(controls, BorderLayout.CENTER)
             add(JBScrollPane(output), BorderLayout.SOUTH)
         }
 

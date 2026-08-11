@@ -10,8 +10,8 @@
     tool, fully offline.
     </p>
     <ul>
-      <li><b>Generate:</b> <b>UUID v4</b> (random) and <b>v7</b> (time-ordered), <b>ULID</b>, and <b>NanoID</b>
-      — one click each, appended to a list you can select and copy.</li>
+      <li><b>Generate:</b> <b>UUID v4</b> (random), <b>v7</b> (time-ordered), name-based <b>v5</b> (SHA-1) and
+      <b>v3</b> (MD5) from a namespace + name, <b>ULID</b>, and <b>NanoID</b> — appended to a list you can select and copy.</li>
       <li><b>Inspect:</b> paste any value and see what it is — the UUID <b>version</b> and <b>variant</b>,
       and the embedded <b>timestamp</b> for UUID v7 and ULID (decoded to a readable instant).</li>
     </ul>
@@ -23,6 +23,7 @@
     ]]></description>
 
     <change-notes><![CDATA[
+    <h3>1.1.0</h3><ul><li>Name-based UUIDs: deterministic <b>v5</b> (SHA-1) and <b>v3</b> (MD5) from a namespace (DNS/URL/OID/X500) + a name.</li></ul>
     <h3>1.0.0</h3><ul><li>Initial release: generate UUID v4/v7, ULID and NanoID, and inspect any of them (version, variant, embedded timestamp) — offline.</li></ul>
     ]]></change-notes>
 

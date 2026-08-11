@@ -1,6 +1,7 @@
 package io.github.vadimtoptunov.kassitestdata.generators
 
 import io.github.vadimtoptunov.kassitestdata.core.Rng
+import java.security.MessageDigest
 
 /**
  * UUID / ULID / NanoID generation and inspection. Unlike the checksum identifiers, these carry no
@@ -109,4 +110,36 @@ object IdToolkit {
 
     /** NanoID has no checksum; validity here is: non-empty and drawn from the URL-safe alphabet. */
     fun isValidNanoId(value: String): Boolean = value.isNotEmpty() && value.all { it in NANOID_ALPHABET }
+
+    // ------------------------------------------------- Namespace UUID (v5 SHA-1, v3 MD5)
+
+    /** The predefined RFC 4122 / 9562 namespaces for name-based UUIDs. */
+    enum class Namespace(val uuid: String) {
+        DNS("6ba7b810-9dad-11d1-80b4-00c04fd430c8"),
+        URL("6ba7b811-9dad-11d1-80b4-00c04fd430c8"),
+        OID("6ba7b812-9dad-11d1-80b4-00c04fd430c8"),
+        X500("6ba7b814-9dad-11d1-80b4-00c04fd430c8"),
+    }
+
+    private fun uuidBytes(uuid: String): ByteArray {
+        val hex = uuid.replace("-", "")
+        return ByteArray(16) { ((Character.digit(hex[it * 2], 16) shl 4) or Character.digit(hex[it * 2 + 1], 16)).toByte() }
+    }
+
+    private fun nameBased(namespace: Namespace, name: String, algorithm: String, version: Int): String {
+        val digest = MessageDigest.getInstance(algorithm)
+            .digest(uuidBytes(namespace.uuid) + name.toByteArray(Charsets.UTF_8))
+        val b = digest.copyOf(16)
+        b[6] = ((b[6].toInt() and 0x0F) or (version shl 4)).toByte()
+        b[8] = ((b[8].toInt() and 0x3F) or 0x80).toByte() // RFC 4122 variant
+        val hex = b.joinToString("") { "%02x".format(it.toInt() and 0xFF) }
+        return "${hex.substring(0, 8)}-${hex.substring(8, 12)}-${hex.substring(12, 16)}-" +
+            "${hex.substring(16, 20)}-${hex.substring(20, 32)}"
+    }
+
+    /** Deterministic name-based UUID version 5 (SHA-1 of namespace + name). */
+    fun uuidV5(namespace: Namespace, name: String): String = nameBased(namespace, name, "SHA-1", 5)
+
+    /** Deterministic name-based UUID version 3 (MD5 of namespace + name). */
+    fun uuidV3(namespace: Namespace, name: String): String = nameBased(namespace, name, "MD5", 3)
 }
