@@ -15,7 +15,8 @@ tools that validate such data. Everything is 100% offline and algorithmic: zero 
 | Plugin | What it does | Marketplace |
 |--------|--------------|-------------|
 | **Checksum & Regex Playground** | Live-validate any pasted identifier against every applicable checksum, plus a regex tester. | [![Version](https://img.shields.io/jetbrains/plugin/v/33227.svg?label=marketplace)](https://plugins.jetbrains.com/plugin/33227-checksum--regex-playground) [![Downloads](https://img.shields.io/jetbrains/plugin/d/33227.svg)](https://plugins.jetbrains.com/plugin/33227-checksum--regex-playground) |
-| **MRZ & Barcode Inspector** | Parse & validate passport/ID MRZ (TD1/TD2/TD3) and AAMVA PDF417 payloads with per-field check digits. | _coming soon_ |
+| **UUID, ULID & NanoID Toolkit** | Generate and validate UUID/ULID/NanoID, with hover info (UUID version, timestamp from a ULID). | [![Version](https://img.shields.io/jetbrains/plugin/v/33488.svg?label=marketplace)](https://plugins.jetbrains.com/plugin/33488) [![Downloads](https://img.shields.io/jetbrains/plugin/d/33488.svg)](https://plugins.jetbrains.com/plugin/33488) |
+| **MRZ & Barcode Inspector** | Parse & validate passport/ID MRZ (TD1/TD2/TD3) and AAMVA PDF417 payloads with per-field check digits. | ✅ listed |
 | **Secret & Card Leak Guard** | Inspection that flags real PAN/IBAN/SSN leaking into code and fixtures, with a quick-fix to synthetic test data. | _coming soon_ |
 | **Kassi HTTP Data Injector** | Insert valid synthetic test data (PAN/IBAN/BIC/persona) into `.http` request files. | _coming soon_ |
 
