@@ -36,11 +36,33 @@ class IdToolkitTest {
     }
 
     @Test
+    fun `UUID v6 reference (RFC 9562)`() {
+        val v6 = IdToolkit.inspectUuid("1EC9414C-232A-6B00-B3C8-9E6BDECED846")!!
+        assertEquals(6, v6.version)
+        assertEquals(1645557742000L, v6.timestampMillis)
+    }
+
+    @Test
     fun `ULID timestamp bounds (per spec)`() {
         // The ULID spec documents the max timestamp 7ZZZZZZZZZ = 2^48 - 1, and min = 0.
         assertEquals(281474976710655L, IdToolkit.ulidTimestampMillis("7ZZZZZZZZZ0000000000000000"))
         assertEquals(0L, IdToolkit.ulidTimestampMillis("00000000000000000000000000"))
         assertNull(IdToolkit.ulidTimestampMillis("too-short"))
+    }
+
+    @Test
+    fun `KSUID timestamp reference (segmentio ksuid)`() {
+        // segmentio/ksuid README inspect example 0ujtsYcgvSTl8PAuAdqWYSMnLOv: raw 0669F7EF...,
+        // Timestamp component 107608047 → unix 1507608047 (2017-10-10 UTC).
+        assertEquals(1507608047L, IdToolkit.ksuidTimestampSeconds("0ujtsYcgvSTl8PAuAdqWYSMnLOv"))
+        assertNull(IdToolkit.ksuidTimestampSeconds("not a ksuid"))
+    }
+
+    @Test
+    fun `Snowflake decode reference (Discord docs)`() {
+        // Discord docs: 175928847299117063 with epoch 1420070400000 → 1462015105796 ms.
+        val info = IdToolkit.snowflakeInfo(175928847299117063L, 1420070400000L)
+        assertEquals(1462015105796L, info.timestampMillis)
     }
 
     @Test

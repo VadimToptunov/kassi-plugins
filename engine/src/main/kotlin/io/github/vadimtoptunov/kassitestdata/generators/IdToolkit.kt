@@ -39,6 +39,24 @@ object IdToolkit {
         return formatUuid(b)
     }
 
+    private const val GREG_UNIX_OFFSET_100NS = 0x01B21DD213814000L // 100-ns intervals from 1582-10-15 to 1970-01-01
+
+    /** Time-ordered UUID version 6 (RFC 9562): reordered 60-bit Gregorian timestamp + random tail. */
+    fun uuidV6(rng: Rng, unixMillis: Long): String {
+        val greg = unixMillis * 10000L + GREG_UNIX_OFFSET_100NS
+        val timeHigh = (greg ushr 28) and 0xFFFFFFFFL
+        val timeMid = (greg ushr 12) and 0xFFFFL
+        val timeLow = greg and 0xFFFL
+        val b = randomBytes(rng, 16)
+        b[0] = ((timeHigh ushr 24) and 0xFF).toByte(); b[1] = ((timeHigh ushr 16) and 0xFF).toByte()
+        b[2] = ((timeHigh ushr 8) and 0xFF).toByte();  b[3] = (timeHigh and 0xFF).toByte()
+        b[4] = ((timeMid ushr 8) and 0xFF).toByte();   b[5] = (timeMid and 0xFF).toByte()
+        b[6] = (0x60 or ((timeLow ushr 8).toInt() and 0x0F)).toByte() // version 6 + high nibble of time_low
+        b[7] = (timeLow and 0xFF).toByte()
+        b[8] = ((b[8].toInt() and 0x3F) or 0x80).toByte() // variant 10xx
+        return formatUuid(b)
+    }
+
     data class UuidInfo(val version: Int, val variant: String, val timestampMillis: Long?)
 
     private val UUID_RE =
@@ -57,7 +75,17 @@ object IdToolkit {
             variantNibble and 0xE == 0xC -> "Microsoft (110x)"
             else -> "reserved (111x)"
         }
-        val ts = if (version == 7) hex.substring(0, 12).toLong(16) else null
+        val ts = when (version) {
+            7 -> hex.substring(0, 12).toLong(16)
+            6 -> {
+                val timeHigh = hex.substring(0, 8).toLong(16)
+                val timeMid = hex.substring(8, 12).toLong(16)
+                val timeLow = hex.substring(13, 16).toLong(16) // skip version nibble at index 12
+                val greg = (timeHigh shl 28) or (timeMid shl 12) or timeLow
+                (greg - GREG_UNIX_OFFSET_100NS) / 10000
+            }
+            else -> null
+        }
         return UuidInfo(version, variant, ts)
     }
 
@@ -110,6 +138,40 @@ object IdToolkit {
 
     /** NanoID has no checksum; validity here is: non-empty and drawn from the URL-safe alphabet. */
     fun isValidNanoId(value: String): Boolean = value.isNotEmpty() && value.all { it in NANOID_ALPHABET }
+
+    // --------------------------------------------------------------- KSUID
+
+    private const val KSUID_B62 = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+    private const val KSUID_EPOCH_SECONDS = 1_400_000_000L // KSUID epoch: 2014-05-13T16:53:20 UTC
+
+    /** Decode a 27-char KSUID's embedded unix timestamp (seconds), or null if not a valid KSUID. */
+    fun ksuidTimestampSeconds(value: String): Long? {
+        val s = value.trim()
+        if (s.length != 27 || s.any { KSUID_B62.indexOf(it) < 0 }) return null
+        var acc = java.math.BigInteger.ZERO
+        val base = java.math.BigInteger.valueOf(62)
+        for (c in s) acc = acc.multiply(base).add(java.math.BigInteger.valueOf(KSUID_B62.indexOf(c).toLong()))
+        val raw = acc.toByteArray()
+        val bytes = ByteArray(20)
+        val src = if (raw.size > 20) raw.copyOfRange(raw.size - 20, raw.size) else raw
+        System.arraycopy(src, 0, bytes, 20 - src.size, src.size)
+        var tsEpoch = 0L
+        for (i in 0 until 4) tsEpoch = (tsEpoch shl 8) or (bytes[i].toLong() and 0xFF)
+        return tsEpoch + KSUID_EPOCH_SECONDS
+    }
+
+    // ----------------------------------------------------------- Snowflake
+
+    data class SnowflakeInfo(val timestampMillis: Long, val datacenterId: Long, val workerId: Long, val sequence: Long)
+
+    /** Decode a 64-bit Snowflake ID against a given epoch (Twitter 1288834974657, Discord 1420070400000, …). */
+    fun snowflakeInfo(id: Long, epochMillis: Long): SnowflakeInfo =
+        SnowflakeInfo(
+            timestampMillis = (id ushr 22) + epochMillis,
+            datacenterId = (id ushr 17) and 0x1F,
+            workerId = (id ushr 12) and 0x1F,
+            sequence = id and 0xFFF,
+        )
 
     // ------------------------------------------------- Namespace UUID (v5 SHA-1, v3 MD5)
 

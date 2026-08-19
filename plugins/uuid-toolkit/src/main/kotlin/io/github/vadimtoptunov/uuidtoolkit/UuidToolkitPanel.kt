@@ -30,11 +30,16 @@ class UuidToolkitPanel : JPanel(BorderLayout()) {
     private val okColor = JBColor(0x2E7D32, 0x66BB6A)
     private val failColor = JBColor(0xC62828, 0xEF5350)
 
+    private companion object {
+        const val TWITTER_EPOCH_MS = 1_288_834_974_657L // Snowflake default epoch
+    }
+
     init {
         border = JBUI.Borders.empty(8)
 
         val buttons = JPanel(FlowLayout(FlowLayout.LEFT, 6, 0)).apply {
             add(genButton("UUID v4") { IdToolkit.uuidV4(rng) })
+            add(genButton("UUID v6") { IdToolkit.uuidV6(rng, System.currentTimeMillis()) })
             add(genButton("UUID v7") { IdToolkit.uuidV7(rng, System.currentTimeMillis()) })
             add(genButton("ULID") { IdToolkit.ulid(rng, System.currentTimeMillis()) })
             add(genButton("NanoID") { IdToolkit.nanoId(rng) })
@@ -98,7 +103,11 @@ class UuidToolkitPanel : JPanel(BorderLayout()) {
             return
         }
         val uuid = IdToolkit.inspectUuid(text)
-        val ok = uuid != null || IdToolkit.isValidUlid(text) || IdToolkit.isValidNanoId(text)
+        val ksuidTime = IdToolkit.ksuidTimestampSeconds(text)
+        // A 15–19 digit value is decoded as a Snowflake ID against the Twitter epoch by default.
+        val snowflakeId = if (text.length in 15..19 && text.all { it.isDigit() }) text.toLongOrNull() else null
+        val ok = uuid != null || IdToolkit.isValidUlid(text) || ksuidTime != null ||
+            snowflakeId != null || IdToolkit.isValidNanoId(text)
         inspectResult.foreground = if (ok) okColor else failColor
         inspectResult.text = when {
             uuid != null -> buildString {
@@ -107,6 +116,9 @@ class UuidToolkitPanel : JPanel(BorderLayout()) {
             }
             IdToolkit.isValidUlid(text) ->
                 "ULID · time ${Instant.ofEpochMilli(IdToolkit.ulidTimestampMillis(text)!!)}"
+            ksuidTime != null -> "KSUID · time ${Instant.ofEpochSecond(ksuidTime)}"
+            snowflakeId != null ->
+                "Snowflake · time ${Instant.ofEpochMilli(IdToolkit.snowflakeInfo(snowflakeId, TWITTER_EPOCH_MS).timestampMillis)} (Twitter epoch)"
             IdToolkit.isValidNanoId(text) -> "NanoID · ${text.length} chars (URL-safe alphabet)"
             else -> "Not a recognized UUID / ULID / NanoID."
         }
