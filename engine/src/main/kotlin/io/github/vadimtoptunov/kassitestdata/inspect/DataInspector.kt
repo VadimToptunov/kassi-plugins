@@ -110,6 +110,11 @@ object DataInspector {
             results["ISBN-10 — book (mod-11)"] = Checksums.isValidIsbn10(compact)
         }
 
+        // FI ALV VAT — bare 8-digit base + check.
+        if (digitsOnly && compact.length == 8) {
+            results["FI VAT (ALV) — weighted mod-11"] = Checksums.isValidFinnishVat(compact)
+        }
+
         // ISO 6346 — 4 letters + 6 digits + check digit.
         if (compact.length == 11 && compact.take(4).all { it in 'A'..'Z' } && compact.drop(4).all { it in '0'..'9' }) {
             results["ISO 6346 — shipping container"] = Checksums.isValidIso6346(compact)

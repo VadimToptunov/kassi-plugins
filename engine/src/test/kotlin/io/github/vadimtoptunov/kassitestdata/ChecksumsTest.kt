@@ -79,4 +79,11 @@ class ChecksumsTest {
         assertTrue(Checksums.isValidIso6346("CSQU3054383"))
         assertFalse(Checksums.isValidIso6346("CSQU3054384"))
     }
+
+    @Test
+    fun `Finnish ALV VAT reference`() {
+        // python-stdnum reference: 20774740 is a valid Finnish VAT.
+        assertTrue(Checksums.isValidFinnishVat("20774740"))
+        assertFalse(Checksums.isValidFinnishVat("20774741"))
+    }
 }

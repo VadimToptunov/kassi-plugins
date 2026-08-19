@@ -359,4 +359,18 @@ object Checksums {
         if (!s.substring(4).all { it in '0'..'9' }) return false
         return iso6346CheckDigit(s.substring(0, 10)) == (s[10] - '0')
     }
+
+    private val FI_VAT_WEIGHTS = intArrayOf(7, 9, 10, 5, 8, 4, 2)
+    /** Finnish VAT check digit for the 7-digit base; null when the remainder is 1 (unassignable). */
+    fun finnishVatCheckDigit(sevenDigits: String): Int? {
+        var sum = 0
+        for (i in 0 until 7) sum += (sevenDigits[i] - '0') * FI_VAT_WEIGHTS[i]
+        return when (val r = sum % 11) { 0 -> 0; 1 -> null; else -> 11 - r }
+    }
+    /** Finnish VAT (ALV): 8 digits = 7-digit base + check digit. */
+    fun isValidFinnishVat(eightDigits: String): Boolean {
+        if (eightDigits.length != 8 || !eightDigits.all { it in '0'..'9' }) return false
+        val c = finnishVatCheckDigit(eightDigits.substring(0, 7)) ?: return false
+        return c == (eightDigits[7] - '0')
+    }
 }

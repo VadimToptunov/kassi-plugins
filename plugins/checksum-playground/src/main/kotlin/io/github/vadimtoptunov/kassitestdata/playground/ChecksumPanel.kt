@@ -104,6 +104,7 @@ class ChecksumPanel : JPanel(BorderLayout()) {
             "RU ОГРН" to "1027700132195",
             "ISO 6346 container" to "CSQU3054383",
             "ICCID (SIM)" to "8988247000000000001",
+            "FI VAT (ALV)" to "20774740",
         )
     }
 }
