@@ -35,6 +35,7 @@ class UuidToolkitPanel : JPanel(BorderLayout()) {
 
         val buttons = JPanel(FlowLayout(FlowLayout.LEFT, 6, 0)).apply {
             add(genButton("UUID v4") { IdToolkit.uuidV4(rng) })
+            add(genButton("UUID v6") { IdToolkit.uuidV6(rng, System.currentTimeMillis()) })
             add(genButton("UUID v7") { IdToolkit.uuidV7(rng, System.currentTimeMillis()) })
             add(genButton("ULID") { IdToolkit.ulid(rng, System.currentTimeMillis()) })
             add(genButton("NanoID") { IdToolkit.nanoId(rng) })

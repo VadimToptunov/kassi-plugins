@@ -36,6 +36,13 @@ class IdToolkitTest {
     }
 
     @Test
+    fun `UUID v6 reference (RFC 9562)`() {
+        val v6 = IdToolkit.inspectUuid("1EC9414C-232A-6B00-B3C8-9E6BDECED846")!!
+        assertEquals(6, v6.version)
+        assertEquals(1645557742000L, v6.timestampMillis)
+    }
+
+    @Test
     fun `ULID timestamp bounds (per spec)`() {
         // The ULID spec documents the max timestamp 7ZZZZZZZZZ = 2^48 - 1, and min = 0.
         assertEquals(281474976710655L, IdToolkit.ulidTimestampMillis("7ZZZZZZZZZ0000000000000000"))
