@@ -51,6 +51,14 @@ class IdToolkitTest {
     }
 
     @Test
+    fun `KSUID timestamp reference (segmentio ksuid)`() {
+        // segmentio/ksuid README inspect example 0ujtsYcgvSTl8PAuAdqWYSMnLOv: raw 0669F7EF...,
+        // Timestamp component 107608047 → unix 1507608047 (2017-10-10 UTC).
+        assertEquals(1507608047L, IdToolkit.ksuidTimestampSeconds("0ujtsYcgvSTl8PAuAdqWYSMnLOv"))
+        assertNull(IdToolkit.ksuidTimestampSeconds("not a ksuid"))
+    }
+
+    @Test
     fun `generators round-trip - embedded structure decodes back`() {
         val rng = Rng(2024L)
         val ts = 1_700_000_000_000L

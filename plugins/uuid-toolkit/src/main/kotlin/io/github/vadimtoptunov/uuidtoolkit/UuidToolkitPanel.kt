@@ -99,7 +99,8 @@ class UuidToolkitPanel : JPanel(BorderLayout()) {
             return
         }
         val uuid = IdToolkit.inspectUuid(text)
-        val ok = uuid != null || IdToolkit.isValidUlid(text) || IdToolkit.isValidNanoId(text)
+        val ksuidTime = IdToolkit.ksuidTimestampSeconds(text)
+        val ok = uuid != null || IdToolkit.isValidUlid(text) || ksuidTime != null || IdToolkit.isValidNanoId(text)
         inspectResult.foreground = if (ok) okColor else failColor
         inspectResult.text = when {
             uuid != null -> buildString {
@@ -108,6 +109,7 @@ class UuidToolkitPanel : JPanel(BorderLayout()) {
             }
             IdToolkit.isValidUlid(text) ->
                 "ULID · time ${Instant.ofEpochMilli(IdToolkit.ulidTimestampMillis(text)!!)}"
+            ksuidTime != null -> "KSUID · time ${Instant.ofEpochSecond(ksuidTime)}"
             IdToolkit.isValidNanoId(text) -> "NanoID · ${text.length} chars (URL-safe alphabet)"
             else -> "Not a recognized UUID / ULID / NanoID."
         }

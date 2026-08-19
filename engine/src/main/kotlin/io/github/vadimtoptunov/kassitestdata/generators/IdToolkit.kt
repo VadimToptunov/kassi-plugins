@@ -139,6 +139,27 @@ object IdToolkit {
     /** NanoID has no checksum; validity here is: non-empty and drawn from the URL-safe alphabet. */
     fun isValidNanoId(value: String): Boolean = value.isNotEmpty() && value.all { it in NANOID_ALPHABET }
 
+    // --------------------------------------------------------------- KSUID
+
+    private const val KSUID_B62 = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+    private const val KSUID_EPOCH_SECONDS = 1_400_000_000L // KSUID epoch: 2014-05-13T16:53:20 UTC
+
+    /** Decode a 27-char KSUID's embedded unix timestamp (seconds), or null if not a valid KSUID. */
+    fun ksuidTimestampSeconds(value: String): Long? {
+        val s = value.trim()
+        if (s.length != 27 || s.any { KSUID_B62.indexOf(it) < 0 }) return null
+        var acc = java.math.BigInteger.ZERO
+        val base = java.math.BigInteger.valueOf(62)
+        for (c in s) acc = acc.multiply(base).add(java.math.BigInteger.valueOf(KSUID_B62.indexOf(c).toLong()))
+        val raw = acc.toByteArray()
+        val bytes = ByteArray(20)
+        val src = if (raw.size > 20) raw.copyOfRange(raw.size - 20, raw.size) else raw
+        System.arraycopy(src, 0, bytes, 20 - src.size, src.size)
+        var tsEpoch = 0L
+        for (i in 0 until 4) tsEpoch = (tsEpoch shl 8) or (bytes[i].toLong() and 0xFF)
+        return tsEpoch + KSUID_EPOCH_SECONDS
+    }
+
     // ------------------------------------------------- Namespace UUID (v5 SHA-1, v3 MD5)
 
     /** The predefined RFC 4122 / 9562 namespaces for name-based UUIDs. */
