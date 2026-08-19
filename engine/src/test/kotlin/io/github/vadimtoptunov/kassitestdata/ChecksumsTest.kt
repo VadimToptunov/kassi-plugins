@@ -72,4 +72,11 @@ class ChecksumsTest {
         // Classic ICAO 9303 passport-number example: "L898902C" → check digit 3.
         assertEquals(3, Checksums.icao731CheckDigit("L898902C"))
     }
+
+    @Test
+    fun `ISO 6346 container reference`() {
+        // Canonical ISO 6346 example CSQU3054383 → check digit 3.
+        assertTrue(Checksums.isValidIso6346("CSQU3054383"))
+        assertFalse(Checksums.isValidIso6346("CSQU3054384"))
+    }
 }

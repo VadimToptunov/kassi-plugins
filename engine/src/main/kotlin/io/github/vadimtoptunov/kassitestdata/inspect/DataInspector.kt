@@ -105,6 +105,11 @@ object DataInspector {
             results["ISBN-10 — book (mod-11)"] = Checksums.isValidIsbn10(compact)
         }
 
+        // ISO 6346 — 4 letters + 6 digits + check digit.
+        if (compact.length == 11 && compact.take(4).all { it in 'A'..'Z' } && compact.drop(4).all { it in '0'..'9' }) {
+            results["ISO 6346 — shipping container"] = Checksums.isValidIso6346(compact)
+        }
+
         // Crypto addresses — case-sensitive, so checked against the raw input.
         if (rawTrimmed.length in 26..35 && (rawTrimmed.startsWith("1") || rawTrimmed.startsWith("3"))) {
             results["Bitcoin address — Base58Check"] = CryptoChecksums.isValidBase58Check(rawTrimmed)
