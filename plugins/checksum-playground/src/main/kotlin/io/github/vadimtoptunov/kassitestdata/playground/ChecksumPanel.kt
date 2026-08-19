@@ -107,6 +107,7 @@ class ChecksumPanel : JPanel(BorderLayout()) {
             "FI VAT (ALV)" to "20774740",
             "DK VAT (CVR)" to "13585628",
             "NO VAT (MVA)" to "988077917",
+            "IBAN (ES) + BBAN" to "ES9121000418450200051332",
         )
     }
 }

@@ -396,4 +396,22 @@ object Checksums {
         val c = norwegianVatCheckDigit(nineDigits.substring(0, 8)) ?: return false
         return c == (nineDigits[8] - '0')
     }
+
+    private val ES_BBAN_WEIGHTS = intArrayOf(1, 2, 4, 8, 5, 10, 9, 7, 3, 6)
+    private fun esControlDigit(tenDigits: String): Char {
+        var sum = 0
+        for (i in 0 until 10) sum += (tenDigits[i] - '0') * ES_BBAN_WEIGHTS[i]
+        return when (val c = 11 - (sum % 11)) { 10 -> '1'; 11 -> '0'; else -> '0' + c }
+    }
+    /** The two Spanish BBAN control digits for an 8-digit bank+branch and a 10-digit account. */
+    fun spanishBbanControlDigits(bankBranch8: String, account10: String): String =
+        "${esControlDigit("00$bankBranch8")}${esControlDigit(account10)}"
+    /** Validate the two national control digits inside a Spanish IBAN (beyond mod-97). */
+    fun isValidSpanishIbanBban(iban: String): Boolean {
+        val s = iban.replace(" ", "").uppercase()
+        if (s.length != 24 || !s.startsWith("ES")) return false
+        val bban = s.substring(4)
+        if (!bban.all { it in '0'..'9' }) return false
+        return spanishBbanControlDigits(bban.substring(0, 8), bban.substring(10, 20)) == bban.substring(8, 10)
+    }
 }

@@ -33,6 +33,11 @@ object DataInspector {
             results["IBAN — ISO 7064 mod-97"] = Checksums.isValidIbanMod97(compact)
         }
 
+        // ES IBAN — extra national BBAN control digits beyond mod-97.
+        if (countryCode == "ES" && compact.length == 24 && afterPrefix.all { it in '0'..'9' }) {
+            results["ES IBAN — national BBAN control"] = Checksums.isValidSpanishIbanBban(compact)
+        }
+
         // Luhn — any plausible card-length digit string.
         if (digitsOnly && compact.length in 12..19) {
             results["Luhn — card number (ISO/IEC 7812)"] = Checksums.isLuhnValid(compact)

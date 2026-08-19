@@ -100,4 +100,11 @@ class ChecksumsTest {
         assertTrue(Checksums.isValidNorwegianVat("988077917"))
         assertFalse(Checksums.isValidNorwegianVat("988077918"))
     }
+
+    @Test
+    fun `Spanish IBAN national BBAN control reference`() {
+        // Well-known valid ES IBAN example.
+        assertTrue(Checksums.isValidSpanishIbanBban("ES9121000418450200051332"))
+        assertFalse(Checksums.isValidSpanishIbanBban("ES9121000418440200051332"))
+    }
 }
