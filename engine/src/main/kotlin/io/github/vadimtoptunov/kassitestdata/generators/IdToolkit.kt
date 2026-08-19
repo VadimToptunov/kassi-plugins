@@ -160,6 +160,19 @@ object IdToolkit {
         return tsEpoch + KSUID_EPOCH_SECONDS
     }
 
+    // ----------------------------------------------------------- Snowflake
+
+    data class SnowflakeInfo(val timestampMillis: Long, val datacenterId: Long, val workerId: Long, val sequence: Long)
+
+    /** Decode a 64-bit Snowflake ID against a given epoch (Twitter 1288834974657, Discord 1420070400000, …). */
+    fun snowflakeInfo(id: Long, epochMillis: Long): SnowflakeInfo =
+        SnowflakeInfo(
+            timestampMillis = (id ushr 22) + epochMillis,
+            datacenterId = (id ushr 17) and 0x1F,
+            workerId = (id ushr 12) and 0x1F,
+            sequence = id and 0xFFF,
+        )
+
     // ------------------------------------------------- Namespace UUID (v5 SHA-1, v3 MD5)
 
     /** The predefined RFC 4122 / 9562 namespaces for name-based UUIDs. */

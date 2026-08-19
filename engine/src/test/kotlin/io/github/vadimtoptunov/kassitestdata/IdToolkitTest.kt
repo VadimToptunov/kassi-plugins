@@ -59,6 +59,13 @@ class IdToolkitTest {
     }
 
     @Test
+    fun `Snowflake decode reference (Discord docs)`() {
+        // Discord docs: 175928847299117063 with epoch 1420070400000 → 1462015105796 ms.
+        val info = IdToolkit.snowflakeInfo(175928847299117063L, 1420070400000L)
+        assertEquals(1462015105796L, info.timestampMillis)
+    }
+
+    @Test
     fun `generators round-trip - embedded structure decodes back`() {
         val rng = Rng(2024L)
         val ts = 1_700_000_000_000L

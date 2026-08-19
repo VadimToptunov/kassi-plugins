@@ -30,6 +30,10 @@ class UuidToolkitPanel : JPanel(BorderLayout()) {
     private val okColor = JBColor(0x2E7D32, 0x66BB6A)
     private val failColor = JBColor(0xC62828, 0xEF5350)
 
+    private companion object {
+        const val TWITTER_EPOCH_MS = 1_288_834_974_657L // Snowflake default epoch
+    }
+
     init {
         border = JBUI.Borders.empty(8)
 
@@ -100,7 +104,10 @@ class UuidToolkitPanel : JPanel(BorderLayout()) {
         }
         val uuid = IdToolkit.inspectUuid(text)
         val ksuidTime = IdToolkit.ksuidTimestampSeconds(text)
-        val ok = uuid != null || IdToolkit.isValidUlid(text) || ksuidTime != null || IdToolkit.isValidNanoId(text)
+        // A 15–19 digit value is decoded as a Snowflake ID against the Twitter epoch by default.
+        val snowflakeId = if (text.length in 15..19 && text.all { it.isDigit() }) text.toLongOrNull() else null
+        val ok = uuid != null || IdToolkit.isValidUlid(text) || ksuidTime != null ||
+            snowflakeId != null || IdToolkit.isValidNanoId(text)
         inspectResult.foreground = if (ok) okColor else failColor
         inspectResult.text = when {
             uuid != null -> buildString {
@@ -110,6 +117,8 @@ class UuidToolkitPanel : JPanel(BorderLayout()) {
             IdToolkit.isValidUlid(text) ->
                 "ULID · time ${Instant.ofEpochMilli(IdToolkit.ulidTimestampMillis(text)!!)}"
             ksuidTime != null -> "KSUID · time ${Instant.ofEpochSecond(ksuidTime)}"
+            snowflakeId != null ->
+                "Snowflake · time ${Instant.ofEpochMilli(IdToolkit.snowflakeInfo(snowflakeId, TWITTER_EPOCH_MS).timestampMillis)} (Twitter epoch)"
             IdToolkit.isValidNanoId(text) -> "NanoID · ${text.length} chars (URL-safe alphabet)"
             else -> "Not a recognized UUID / ULID / NanoID."
         }
