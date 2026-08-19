@@ -3,6 +3,7 @@ package io.github.vadimtoptunov.kassitestdata
 import io.github.vadimtoptunov.kassitestdata.inspect.MrzInspector
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
@@ -32,7 +33,7 @@ class MrzInspectorTest {
         assertTrue(r.dateOfBirth.valid)
         assertTrue(r.expiryDate.valid)
         assertTrue(r.personalNumber!!.valid)
-        assertTrue(r.composite.valid)
+        assertTrue(r.composite!!.valid)
         assertTrue(r.allChecksValid)
     }
 
@@ -84,8 +85,66 @@ class MrzInspectorTest {
         assertTrue(r.documentNumber.valid)
         assertTrue(r.dateOfBirth.valid)
         assertTrue(r.expiryDate.valid)
-        assertTrue(r.composite.valid)
+        assertTrue(r.composite!!.valid)
         assertEquals("ERIKSSON", r.surname)
         assertEquals("ANNA MARIA", r.givenNames)
+    }
+
+    // ICAO Doc 9303 Part 7 specimen machine-readable visas (Anna Maria Eriksson, fictitious), as
+    // reproduced by the Arg0s1080/mrz reference library (visa_mrva_uto / visa_mrvb_uto). Verified
+    // by hand against ICAO 7-3-1: doc L8988901C->4, DOB 400907->8, expiry 961210->9.
+    private val mrvaLine1 = "V<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<"
+    private val mrvaLine2 = "L8988901C4XXX4009078F96121096ZE184226B<<<<<<"
+    private val mrvbLine1 = "V<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<"
+    private val mrvbLine2 = "L8988901C4XXX4009078F9612109<<<<<<<<"
+
+    @Test
+    fun `MRV-A visa - reference specimen parses, every per-field check digit valid, no composite`() {
+        val outcome = MrzInspector.inspect(listOf(mrvaLine1, mrvaLine2)) as MrzInspector.Outcome.Success
+        val r = outcome.result
+
+        assertEquals(MrzInspector.Format.MRVA, r.format) // 2x44 + 'V' -> visa, not TD3
+        assertEquals("V", r.documentType)
+        assertEquals("UTO", r.issuingCountry)
+        assertEquals("XXX", r.nationality)
+        assertEquals("F", r.sex)
+        assertEquals("ERIKSSON", r.surname)
+        assertEquals("ANNA MARIA", r.givenNames)
+        assertEquals("L8988901C", r.documentNumber.value)
+        assertEquals("400907", r.dateOfBirth.value)
+        assertEquals("961210", r.expiryDate.value)
+
+        assertTrue(r.documentNumber.valid)
+        assertTrue(r.dateOfBirth.valid)
+        assertTrue(r.expiryDate.valid)
+        assertNull(r.personalNumber)
+        assertNull(r.composite) // MRV has no composite check digit
+        assertTrue(r.allChecksValid)
+    }
+
+    @Test
+    fun `MRV-B visa - reference specimen parses, every per-field check digit valid, no composite`() {
+        val r = (MrzInspector.inspect(listOf(mrvbLine1, mrvbLine2)) as MrzInspector.Outcome.Success).result
+
+        assertEquals(MrzInspector.Format.MRVB, r.format) // 2x36 + 'V' -> visa, not TD2
+        assertEquals("V", r.documentType)
+        assertEquals("L8988901C", r.documentNumber.value)
+        assertEquals("400907", r.dateOfBirth.value)
+        assertEquals("961210", r.expiryDate.value)
+        assertTrue(r.documentNumber.valid)
+        assertTrue(r.dateOfBirth.valid)
+        assertTrue(r.expiryDate.valid)
+        assertNull(r.composite)
+        assertTrue(r.allChecksValid)
+    }
+
+    @Test
+    fun `MRV-A - a corrupted expiry check digit is caught`() {
+        val corrupted = mrvaLine2.substring(0, 27) + "0" + mrvaLine2.substring(28) // expiry check 9 -> 0
+        val r = (MrzInspector.inspect(listOf(mrvaLine1, corrupted)) as MrzInspector.Outcome.Success).result
+        assertFalse(r.expiryDate.valid)
+        assertEquals('9', r.expiryDate.expectedCheckDigit)
+        assertTrue(r.documentNumber.valid)
+        assertFalse(r.allChecksValid)
     }
 }
