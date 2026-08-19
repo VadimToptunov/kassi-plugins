@@ -113,6 +113,7 @@ object DataInspector {
         // FI ALV VAT — bare 8-digit base + check.
         if (digitsOnly && compact.length == 8) {
             results["FI VAT (ALV) — weighted mod-11"] = Checksums.isValidFinnishVat(compact)
+            results["DK VAT (CVR) — mod-11"] = Checksums.isValidDanishVat(compact)
         }
 
         // ISO 6346 — 4 letters + 6 digits + check digit.

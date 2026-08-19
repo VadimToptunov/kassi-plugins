@@ -29,6 +29,7 @@
     ]]></description>
 
     <change-notes><![CDATA[
+    <h3>1.7.0</h3><ul><li>New check: Danish VAT / CVR (mod-11).</li></ul>
     <h3>1.6.0</h3><ul><li>New check: Finnish VAT / ALV (weighted mod-11).</li></ul>
     <h3>1.5.0</h3><ul><li>New check: ICCID SIM-card numbers (Luhn).</li></ul>
     <h3>1.4.0</h3><ul><li>New check: ISO 6346 shipping-container codes.</li></ul>

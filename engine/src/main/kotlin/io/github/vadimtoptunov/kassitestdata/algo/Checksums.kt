@@ -373,4 +373,13 @@ object Checksums {
         val c = finnishVatCheckDigit(eightDigits.substring(0, 7)) ?: return false
         return c == (eightDigits[7] - '0')
     }
+
+    private val DK_CVR_WEIGHTS = intArrayOf(2, 7, 6, 5, 4, 3, 2, 1)
+    /** Danish VAT (CVR): 8 digits, weighted sum divisible by 11. */
+    fun isValidDanishVat(eightDigits: String): Boolean {
+        if (eightDigits.length != 8 || !eightDigits.all { it in '0'..'9' }) return false
+        var sum = 0
+        for (i in 0 until 8) sum += (eightDigits[i] - '0') * DK_CVR_WEIGHTS[i]
+        return sum % 11 == 0
+    }
 }

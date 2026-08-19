@@ -86,4 +86,11 @@ class ChecksumsTest {
         assertTrue(Checksums.isValidFinnishVat("20774740"))
         assertFalse(Checksums.isValidFinnishVat("20774741"))
     }
+
+    @Test
+    fun `Danish CVR VAT reference`() {
+        // python-stdnum reference: 13585628 is a valid Danish CVR.
+        assertTrue(Checksums.isValidDanishVat("13585628"))
+        assertFalse(Checksums.isValidDanishVat("13585629"))
+    }
 }
