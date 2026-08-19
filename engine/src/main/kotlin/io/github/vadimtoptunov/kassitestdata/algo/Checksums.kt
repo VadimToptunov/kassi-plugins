@@ -335,4 +335,83 @@ object Checksums {
         val check = jmbgCheckDigit(value.substring(0, 12)) ?: return false
         return check == (value[12] - '0')
     }
+
+    // ---- ISO 6346 shipping-container code: 4 letters + 6 digits + 1 check digit ----
+    private fun iso6346Value(c: Char): Int {
+        var v = 10
+        for (ch in 'A' until c) { v++; if (v % 11 == 0) v++ }
+        return v
+    }
+    /** ISO 6346 check digit for the first 10 chars (4 letters + 6 digits). */
+    fun iso6346CheckDigit(firstTen: String): Int {
+        var sum = 0
+        for (i in 0 until 10) {
+            val value = if (firstTen[i] in 'A'..'Z') iso6346Value(firstTen[i]) else (firstTen[i] - '0')
+            sum += value * (1 shl i)
+        }
+        return (sum % 11) % 10
+    }
+    /** Validate a full 11-char ISO 6346 container code. */
+    fun isValidIso6346(code: String): Boolean {
+        val s = code.uppercase()
+        if (s.length != 11) return false
+        if (!s.substring(0, 4).all { it in 'A'..'Z' }) return false
+        if (!s.substring(4).all { it in '0'..'9' }) return false
+        return iso6346CheckDigit(s.substring(0, 10)) == (s[10] - '0')
+    }
+
+    private val FI_VAT_WEIGHTS = intArrayOf(7, 9, 10, 5, 8, 4, 2)
+    /** Finnish VAT check digit for the 7-digit base; null when the remainder is 1 (unassignable). */
+    fun finnishVatCheckDigit(sevenDigits: String): Int? {
+        var sum = 0
+        for (i in 0 until 7) sum += (sevenDigits[i] - '0') * FI_VAT_WEIGHTS[i]
+        return when (val r = sum % 11) { 0 -> 0; 1 -> null; else -> 11 - r }
+    }
+    /** Finnish VAT (ALV): 8 digits = 7-digit base + check digit. */
+    fun isValidFinnishVat(eightDigits: String): Boolean {
+        if (eightDigits.length != 8 || !eightDigits.all { it in '0'..'9' }) return false
+        val c = finnishVatCheckDigit(eightDigits.substring(0, 7)) ?: return false
+        return c == (eightDigits[7] - '0')
+    }
+
+    private val DK_CVR_WEIGHTS = intArrayOf(2, 7, 6, 5, 4, 3, 2, 1)
+    /** Danish VAT (CVR): 8 digits, weighted sum divisible by 11. */
+    fun isValidDanishVat(eightDigits: String): Boolean {
+        if (eightDigits.length != 8 || !eightDigits.all { it in '0'..'9' }) return false
+        var sum = 0
+        for (i in 0 until 8) sum += (eightDigits[i] - '0') * DK_CVR_WEIGHTS[i]
+        return sum % 11 == 0
+    }
+
+    private val NO_ORGNR_WEIGHTS = intArrayOf(3, 2, 7, 6, 5, 4, 3, 2)
+    /** Norwegian orgnr/MVA check digit for the 8-digit base; null when the remainder is 1. */
+    fun norwegianVatCheckDigit(eightDigits: String): Int? {
+        var sum = 0
+        for (i in 0 until 8) sum += (eightDigits[i] - '0') * NO_ORGNR_WEIGHTS[i]
+        return when (val r = sum % 11) { 0 -> 0; 1 -> null; else -> 11 - r }
+    }
+    /** Norwegian VAT (MVA): 9-digit organisasjonsnummer = 8-digit base + check digit. */
+    fun isValidNorwegianVat(nineDigits: String): Boolean {
+        if (nineDigits.length != 9 || !nineDigits.all { it in '0'..'9' }) return false
+        val c = norwegianVatCheckDigit(nineDigits.substring(0, 8)) ?: return false
+        return c == (nineDigits[8] - '0')
+    }
+
+    private val ES_BBAN_WEIGHTS = intArrayOf(1, 2, 4, 8, 5, 10, 9, 7, 3, 6)
+    private fun esControlDigit(tenDigits: String): Char {
+        var sum = 0
+        for (i in 0 until 10) sum += (tenDigits[i] - '0') * ES_BBAN_WEIGHTS[i]
+        return when (val c = 11 - (sum % 11)) { 10 -> '1'; 11 -> '0'; else -> '0' + c }
+    }
+    /** The two Spanish BBAN control digits for an 8-digit bank+branch and a 10-digit account. */
+    fun spanishBbanControlDigits(bankBranch8: String, account10: String): String =
+        "${esControlDigit("00$bankBranch8")}${esControlDigit(account10)}"
+    /** Validate the two national control digits inside a Spanish IBAN (beyond mod-97). */
+    fun isValidSpanishIbanBban(iban: String): Boolean {
+        val s = iban.replace(" ", "").uppercase()
+        if (s.length != 24 || !s.startsWith("ES")) return false
+        val bban = s.substring(4)
+        if (!bban.all { it in '0'..'9' }) return false
+        return spanishBbanControlDigits(bban.substring(0, 8), bban.substring(10, 20)) == bban.substring(8, 10)
+    }
 }

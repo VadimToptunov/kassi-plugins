@@ -102,6 +102,12 @@ class ChecksumPanel : JPanel(BorderLayout()) {
             "RU ИНН (физ.)" to "500100732259",
             "RU СНИЛС" to "112-233-445 95",
             "RU ОГРН" to "1027700132195",
+            "ISO 6346 container" to "CSQU3054383",
+            "ICCID (SIM)" to "8988247000000000001",
+            "FI VAT (ALV)" to "20774740",
+            "DK VAT (CVR)" to "13585628",
+            "NO VAT (MVA)" to "988077917",
+            "IBAN (ES) + BBAN" to "ES9121000418450200051332",
         )
     }
 }

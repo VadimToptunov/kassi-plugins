@@ -52,6 +52,13 @@ class DataInspectorTest {
     }
 
     @Test
+    fun `validates an ICCID SIM number by Luhn`() {
+        // 18-digit base 898824700000000000 + Luhn check digit 1 → 19-digit ICCID.
+        assertTrue(passed("8988247000000000001", "ICCID"))
+        assertFalse(passed("8988247000000000002", "ICCID"))
+    }
+
+    @Test
     fun `empty or junk input yields no applicable checks`() {
         assertTrue(DataInspector.inspect("").isEmpty())
         assertTrue(DataInspector.inspect("!!!").isEmpty())

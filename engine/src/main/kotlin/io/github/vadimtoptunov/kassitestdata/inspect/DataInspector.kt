@@ -33,6 +33,11 @@ object DataInspector {
             results["IBAN — ISO 7064 mod-97"] = Checksums.isValidIbanMod97(compact)
         }
 
+        // ES IBAN — extra national BBAN control digits beyond mod-97.
+        if (countryCode == "ES" && compact.length == 24 && afterPrefix.all { it in '0'..'9' }) {
+            results["ES IBAN — national BBAN control"] = Checksums.isValidSpanishIbanBban(compact)
+        }
+
         // Luhn — any plausible card-length digit string.
         if (digitsOnly && compact.length in 12..19) {
             results["Luhn — card number (ISO/IEC 7812)"] = Checksums.isLuhnValid(compact)
@@ -44,6 +49,7 @@ object DataInspector {
             results["AU TFN — weighted mod-11"] = Checksums.isValidTfn(compact)
             results["DE VAT — ISO 7064 MOD 11,10"] = Checksums.isValidGermanVat(compact)
             results["UK VAT — modulo-97"] = Checksums.isValidUkVat(compact)
+            results["NO VAT (MVA/orgnr) — mod-11"] = Checksums.isValidNorwegianVat(compact)
         }
 
         // AU ABN.
@@ -93,6 +99,11 @@ object DataInspector {
             results["IMEI — device (Luhn)"] = Checksums.isLuhnValid(compact)
         }
 
+        // ICCID — SIM identifier, 19–20 digits, Luhn-checked.
+        if (digitsOnly && compact.length in 19..20) {
+            results["ICCID — SIM card (Luhn)"] = Checksums.isLuhnValid(compact)
+        }
+
         // VIN — 17 alphanumerics (no I/O/Q), weighted mod-11 check character.
         if (compact.length == 17 && compact.all { it in '0'..'9' || it in 'A'..'Z' }) {
             results["VIN — vehicle (ISO 3779)"] = Checksums.isValidVin(compact)
@@ -103,6 +114,17 @@ object DataInspector {
             (compact[9] in '0'..'9' || compact[9] == 'X')
         ) {
             results["ISBN-10 — book (mod-11)"] = Checksums.isValidIsbn10(compact)
+        }
+
+        // FI ALV VAT — bare 8-digit base + check.
+        if (digitsOnly && compact.length == 8) {
+            results["FI VAT (ALV) — weighted mod-11"] = Checksums.isValidFinnishVat(compact)
+            results["DK VAT (CVR) — mod-11"] = Checksums.isValidDanishVat(compact)
+        }
+
+        // ISO 6346 — 4 letters + 6 digits + check digit.
+        if (compact.length == 11 && compact.take(4).all { it in 'A'..'Z' } && compact.drop(4).all { it in '0'..'9' }) {
+            results["ISO 6346 — shipping container"] = Checksums.isValidIso6346(compact)
         }
 
         // Crypto addresses — case-sensitive, so checked against the raw input.

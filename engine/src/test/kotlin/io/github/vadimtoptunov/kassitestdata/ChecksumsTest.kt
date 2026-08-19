@@ -72,4 +72,39 @@ class ChecksumsTest {
         // Classic ICAO 9303 passport-number example: "L898902C" → check digit 3.
         assertEquals(3, Checksums.icao731CheckDigit("L898902C"))
     }
+
+    @Test
+    fun `ISO 6346 container reference`() {
+        // Canonical ISO 6346 example CSQU3054383 → check digit 3.
+        assertTrue(Checksums.isValidIso6346("CSQU3054383"))
+        assertFalse(Checksums.isValidIso6346("CSQU3054384"))
+    }
+
+    @Test
+    fun `Finnish ALV VAT reference`() {
+        // python-stdnum reference: 20774740 is a valid Finnish VAT.
+        assertTrue(Checksums.isValidFinnishVat("20774740"))
+        assertFalse(Checksums.isValidFinnishVat("20774741"))
+    }
+
+    @Test
+    fun `Danish CVR VAT reference`() {
+        // python-stdnum reference: 13585628 is a valid Danish CVR.
+        assertTrue(Checksums.isValidDanishVat("13585628"))
+        assertFalse(Checksums.isValidDanishVat("13585629"))
+    }
+
+    @Test
+    fun `Norwegian MVA orgnr reference`() {
+        // python-stdnum reference: 988077917 is a valid Norwegian orgnr.
+        assertTrue(Checksums.isValidNorwegianVat("988077917"))
+        assertFalse(Checksums.isValidNorwegianVat("988077918"))
+    }
+
+    @Test
+    fun `Spanish IBAN national BBAN control reference`() {
+        // Well-known valid ES IBAN example.
+        assertTrue(Checksums.isValidSpanishIbanBban("ES9121000418450200051332"))
+        assertFalse(Checksums.isValidSpanishIbanBban("ES9121000418440200051332"))
+    }
 }
