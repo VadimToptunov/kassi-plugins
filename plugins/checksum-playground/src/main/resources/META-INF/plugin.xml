@@ -29,6 +29,7 @@
     ]]></description>
 
     <change-notes><![CDATA[
+    <h3>1.5.0</h3><ul><li>New check: ICCID SIM-card numbers (Luhn).</li></ul>
     <h3>1.4.0</h3><ul><li>New check: ISO 6346 shipping-container codes.</li></ul>
     <h3>1.3.0</h3><ul><li>Parity with the generator: the Checksums tab now validates <b>VIN</b> (ISO 3779), <b>ISBN-10/13</b>, <b>JMBG</b> (ex-Yugoslav ID), and crypto addresses — <b>Bitcoin</b> (Base58Check) and <b>Ethereum</b> (EIP-55, real Keccak-256) — all available in the type picker too.</li></ul>
     <h3>1.2.0</h3><ul><li>Regex tab upgrade: <b>flags</b> (ignore-case, multiline, dot-all, extended), a <b>ready-made pattern library</b> (email, IPv4, URL, UUID, ISO date, hex colour…), and a live <b>replace</b> with <code>$1</code> group references.</li></ul>

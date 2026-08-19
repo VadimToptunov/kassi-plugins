@@ -93,6 +93,11 @@ object DataInspector {
             results["IMEI — device (Luhn)"] = Checksums.isLuhnValid(compact)
         }
 
+        // ICCID — SIM identifier, 19–20 digits, Luhn-checked.
+        if (digitsOnly && compact.length in 19..20) {
+            results["ICCID — SIM card (Luhn)"] = Checksums.isLuhnValid(compact)
+        }
+
         // VIN — 17 alphanumerics (no I/O/Q), weighted mod-11 check character.
         if (compact.length == 17 && compact.all { it in '0'..'9' || it in 'A'..'Z' }) {
             results["VIN — vehicle (ISO 3779)"] = Checksums.isValidVin(compact)

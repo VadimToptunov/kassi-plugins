@@ -103,6 +103,7 @@ class ChecksumPanel : JPanel(BorderLayout()) {
             "RU СНИЛС" to "112-233-445 95",
             "RU ОГРН" to "1027700132195",
             "ISO 6346 container" to "CSQU3054383",
+            "ICCID (SIM)" to "8988247000000000001",
         )
     }
 }
