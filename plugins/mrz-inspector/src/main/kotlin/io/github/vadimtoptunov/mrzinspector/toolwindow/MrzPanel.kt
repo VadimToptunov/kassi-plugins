@@ -61,7 +61,7 @@ class MrzPanel : JPanel(BorderLayout()) {
         appendField("Date of birth", r.dateOfBirth)
         appendField("Expiry date", r.expiryDate)
         r.personalNumber?.let { appendField("Personal number", it) }
-        appendField("Composite", r.composite)
+        r.composite?.let { appendField("Composite", it) } // absent for MRV-A/MRV-B visas
         appendLine()
         appendLine(if (r.allChecksValid) "✓ All check digits valid." else "✗ At least one check digit is invalid — see above.")
     }

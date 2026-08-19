@@ -11,8 +11,9 @@
     check digit — the exact opposite direction of a generator, and the ideal companion to one.
     </p>
     <ul>
-      <li><b>MRZ tab</b> — paste a Machine Readable Zone: TD3 (2×44, passports), TD2 (2×36) or TD1
-      (3×30, ID cards). Parses document type, names, dates, nationality and validates every
+      <li><b>MRZ tab</b> — paste a Machine Readable Zone: TD3 (2×44, passports), TD2 (2×36), TD1
+      (3×30, ID cards), or a machine-readable visa MRV-A (2×44) / MRV-B (2×36). Parses document
+      type, names, dates, nationality and validates every
       individual check digit (document number, date of birth, expiry, personal number) plus the
       composite check digit — using the same ICAO 7-3-1 routine already covered by
       <i>Kassi Test Data</i>'s DE ID card generator.</li>
@@ -29,6 +30,10 @@
     ]]></description>
 
     <change-notes><![CDATA[
+    <h3>1.2.0</h3>
+    <ul>
+      <li>Machine-readable visas: the MRZ tab now recognizes <b>MRV-A</b> (2×44) and <b>MRV-B</b> (2×36) visa documents (type <code>V</code>), validating every per-field check digit. Visas carry no composite check digit, per ICAO 9303 Part 7.</li>
+    </ul>
     <h3>1.1.0</h3>
     <ul>
       <li>When a check digit is wrong, the MRZ tab now shows the <b>expected</b> digit (e.g. <code>check digit '5' — expected '6'</code>) so you can fix the MRZ, not just see that it's broken.</li>
