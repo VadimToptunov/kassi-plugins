@@ -382,4 +382,18 @@ object Checksums {
         for (i in 0 until 8) sum += (eightDigits[i] - '0') * DK_CVR_WEIGHTS[i]
         return sum % 11 == 0
     }
+
+    private val NO_ORGNR_WEIGHTS = intArrayOf(3, 2, 7, 6, 5, 4, 3, 2)
+    /** Norwegian orgnr/MVA check digit for the 8-digit base; null when the remainder is 1. */
+    fun norwegianVatCheckDigit(eightDigits: String): Int? {
+        var sum = 0
+        for (i in 0 until 8) sum += (eightDigits[i] - '0') * NO_ORGNR_WEIGHTS[i]
+        return when (val r = sum % 11) { 0 -> 0; 1 -> null; else -> 11 - r }
+    }
+    /** Norwegian VAT (MVA): 9-digit organisasjonsnummer = 8-digit base + check digit. */
+    fun isValidNorwegianVat(nineDigits: String): Boolean {
+        if (nineDigits.length != 9 || !nineDigits.all { it in '0'..'9' }) return false
+        val c = norwegianVatCheckDigit(nineDigits.substring(0, 8)) ?: return false
+        return c == (nineDigits[8] - '0')
+    }
 }

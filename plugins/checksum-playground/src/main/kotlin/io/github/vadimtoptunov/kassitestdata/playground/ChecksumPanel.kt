@@ -106,6 +106,7 @@ class ChecksumPanel : JPanel(BorderLayout()) {
             "ICCID (SIM)" to "8988247000000000001",
             "FI VAT (ALV)" to "20774740",
             "DK VAT (CVR)" to "13585628",
+            "NO VAT (MVA)" to "988077917",
         )
     }
 }

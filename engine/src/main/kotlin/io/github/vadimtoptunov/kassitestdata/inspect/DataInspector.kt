@@ -44,6 +44,7 @@ object DataInspector {
             results["AU TFN — weighted mod-11"] = Checksums.isValidTfn(compact)
             results["DE VAT — ISO 7064 MOD 11,10"] = Checksums.isValidGermanVat(compact)
             results["UK VAT — modulo-97"] = Checksums.isValidUkVat(compact)
+            results["NO VAT (MVA/orgnr) — mod-11"] = Checksums.isValidNorwegianVat(compact)
         }
 
         // AU ABN.

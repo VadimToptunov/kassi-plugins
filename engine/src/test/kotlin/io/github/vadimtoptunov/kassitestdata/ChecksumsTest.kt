@@ -93,4 +93,11 @@ class ChecksumsTest {
         assertTrue(Checksums.isValidDanishVat("13585628"))
         assertFalse(Checksums.isValidDanishVat("13585629"))
     }
+
+    @Test
+    fun `Norwegian MVA orgnr reference`() {
+        // python-stdnum reference: 988077917 is a valid Norwegian orgnr.
+        assertTrue(Checksums.isValidNorwegianVat("988077917"))
+        assertFalse(Checksums.isValidNorwegianVat("988077918"))
+    }
 }
