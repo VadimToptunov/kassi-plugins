@@ -43,3 +43,4 @@ jobs:
         with:
           name: plugin-distributions
           path: plugins/*/build/distributions/*.zip
+          retention-days: 5
