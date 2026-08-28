@@ -7,8 +7,8 @@ import java.security.MessageDigest
  * UUID / ULID / NanoID generation and inspection. Unlike the checksum identifiers, these carry no
  * check digit — their verifiable structure is the version/variant bits (UUID) and the embedded
  * 48-bit millisecond timestamp (UUID v7, ULID). The tests anchor to published reference values
- * (RFC 9562 for UUID v7, the ULID spec's documented min/max timestamps) rather than round-tripping
- * our own output.
+ * (RFC 9562 for UUID v7, the ULID spec's documented min/max timestamps, the TypeID spec's official
+ * test vectors) rather than round-tripping our own output.
  */
 object IdToolkit {
 
@@ -126,6 +126,70 @@ object IdToolkit {
         for (i in 0 until 10) ts = (ts shl 5) or crockfordValue(s[i]).toLong()
         return ts
     }
+
+    // --------------------------------------------------------------- TypeID
+
+    // TypeID (github.com/jetify-com/typeid) = a type prefix + '_' + a 26-char suffix that is the
+    // 128-bit UUID encoded in *lowercase* Crockford base32. Two zero bits are prepended to the
+    // 128 bits, giving 130 = 26 * 5, so the leading suffix character never exceeds '7'.
+    private const val CROCKFORD_LOWER = "0123456789abcdefghjkmnpqrstvwxyz"
+    private val TYPEID_PREFIX_RE = Regex("^[a-z]([a-z_]{0,61}[a-z])?$")
+
+    private fun typeIdEncodeSuffix(uuidBytes: ByteArray): String {
+        var v = java.math.BigInteger(1, uuidBytes) // unsigned 128-bit big-endian
+        val mask = java.math.BigInteger.valueOf(31)
+        val out = CharArray(26)
+        for (i in 25 downTo 0) {
+            out[i] = CROCKFORD_LOWER[v.and(mask).toInt()]
+            v = v.shiftRight(5)
+        }
+        return String(out)
+    }
+
+    /** Decode a 26-char TypeID suffix to the canonical UUID string, or null if it isn't valid. */
+    private fun typeIdDecodeSuffix(suffix: String): String? {
+        if (suffix.length != 26 || suffix[0] !in '0'..'7') return null // >'7' would overflow 128 bits
+        var v = java.math.BigInteger.ZERO
+        for (c in suffix) {
+            val d = CROCKFORD_LOWER.indexOf(c) // strict: TypeIDs are canonically lowercase
+            if (d < 0) return null
+            v = v.shiftLeft(5).or(java.math.BigInteger.valueOf(d.toLong()))
+        }
+        val raw = v.toByteArray()
+        val bytes = ByteArray(16)
+        val src = if (raw.size > 16) raw.copyOfRange(raw.size - 16, raw.size) else raw
+        System.arraycopy(src, 0, bytes, 16 - src.size, src.size)
+        return formatUuid(bytes)
+    }
+
+    private fun isValidTypeIdPrefix(prefix: String) = prefix.isEmpty() || TYPEID_PREFIX_RE.matches(prefix)
+
+    /** Encode an existing UUID as a TypeID with the given (possibly empty) type prefix. */
+    fun typeIdFromUuid(prefix: String, uuid: String): String {
+        require(isValidTypeIdPrefix(prefix)) { "Invalid TypeID prefix: $prefix" }
+        val suffix = typeIdEncodeSuffix(uuidBytes(uuid))
+        return if (prefix.isEmpty()) suffix else "${prefix}_$suffix"
+    }
+
+    /** Generate a fresh TypeID: a UUID v7 for the given time, encoded under [prefix]. */
+    fun typeId(prefix: String, rng: Rng, unixMillis: Long): String =
+        typeIdFromUuid(prefix, uuidV7(rng, unixMillis))
+
+    data class TypeIdInfo(val prefix: String, val uuid: String)
+
+    /** Parse a TypeID into its prefix and decoded UUID, or null if prefix/suffix is malformed. */
+    fun parseTypeId(value: String): TypeIdInfo? {
+        val s = value.trim()
+        val sep = s.lastIndexOf('_') // the suffix has no '_', so the last one is the separator
+        val prefix = if (sep < 0) "" else s.substring(0, sep)
+        val suffix = if (sep < 0) s else s.substring(sep + 1)
+        if (sep >= 0 && prefix.isEmpty()) return null // a separator implies a non-empty prefix
+        if (!isValidTypeIdPrefix(prefix)) return null
+        val uuid = typeIdDecodeSuffix(suffix) ?: return null
+        return TypeIdInfo(prefix, uuid)
+    }
+
+    fun isValidTypeId(value: String): Boolean = parseTypeId(value) != null
 
     // -------------------------------------------------------------- NanoID
 

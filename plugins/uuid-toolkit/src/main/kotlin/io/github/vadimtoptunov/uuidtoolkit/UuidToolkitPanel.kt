@@ -60,10 +60,21 @@ class UuidToolkitPanel : JPanel(BorderLayout()) {
             add(JButton("v5").apply { addActionListener { nameBased(IdToolkit::uuidV5) } })
             add(JButton("v3").apply { addActionListener { nameBased(IdToolkit::uuidV3) } })
         }
+
+        // TypeID (jetify): a type prefix + a UUID v7 encoded in lowercase Crockford base32.
+        val typeIdPrefix = JBTextField(12).apply { text = "user" }
+        val typeIdRow = JPanel(FlowLayout(FlowLayout.LEFT, 6, 0)).apply {
+            add(JBLabel("TypeID prefix:"))
+            add(typeIdPrefix)
+            add(JButton("TypeID").apply {
+                addActionListener { output.append(IdToolkit.typeId(typeIdPrefix.text.trim(), rng, System.currentTimeMillis()) + "\n") }
+            })
+        }
         val controls = JPanel().apply {
             layout = BoxLayout(this, BoxLayout.Y_AXIS)
             add(buttons)
             add(nsRow)
+            add(typeIdRow)
         }
 
         val top = JPanel(BorderLayout(0, 4)).apply {
@@ -73,7 +84,7 @@ class UuidToolkitPanel : JPanel(BorderLayout()) {
         }
 
         val bottom = JPanel(BorderLayout(0, 4)).apply {
-            add(labeled("Inspect — paste a UUID / ULID / NanoID:", inspectInput), BorderLayout.NORTH)
+            add(labeled("Inspect — paste a UUID / ULID / TypeID / NanoID:", inspectInput), BorderLayout.NORTH)
             add(inspectResult, BorderLayout.CENTER)
         }
 
@@ -104,9 +115,11 @@ class UuidToolkitPanel : JPanel(BorderLayout()) {
         }
         val uuid = IdToolkit.inspectUuid(text)
         val ksuidTime = IdToolkit.ksuidTimestampSeconds(text)
+        // A prefixed value (contains '_') is tried as a TypeID; a bare 26-char base32 string stays a ULID.
+        val typeId = if (text.contains('_')) IdToolkit.parseTypeId(text) else null
         // A 15–19 digit value is decoded as a Snowflake ID against the Twitter epoch by default.
         val snowflakeId = if (text.length in 15..19 && text.all { it.isDigit() }) text.toLongOrNull() else null
-        val ok = uuid != null || IdToolkit.isValidUlid(text) || ksuidTime != null ||
+        val ok = uuid != null || typeId != null || IdToolkit.isValidUlid(text) || ksuidTime != null ||
             snowflakeId != null || IdToolkit.isValidNanoId(text)
         inspectResult.foreground = if (ok) okColor else failColor
         inspectResult.text = when {
@@ -114,13 +127,15 @@ class UuidToolkitPanel : JPanel(BorderLayout()) {
                 append("UUID v${uuid.version} · variant ${uuid.variant}")
                 uuid.timestampMillis?.let { append(" · time ${Instant.ofEpochMilli(it)}") }
             }
+            typeId != null ->
+                "TypeID · prefix \"${typeId.prefix}\" · UUID ${typeId.uuid}"
             IdToolkit.isValidUlid(text) ->
                 "ULID · time ${Instant.ofEpochMilli(IdToolkit.ulidTimestampMillis(text)!!)}"
             ksuidTime != null -> "KSUID · time ${Instant.ofEpochSecond(ksuidTime)}"
             snowflakeId != null ->
                 "Snowflake · time ${Instant.ofEpochMilli(IdToolkit.snowflakeInfo(snowflakeId, TWITTER_EPOCH_MS).timestampMillis)} (Twitter epoch)"
             IdToolkit.isValidNanoId(text) -> "NanoID · ${text.length} chars (URL-safe alphabet)"
-            else -> "Not a recognized UUID / ULID / NanoID."
+            else -> "Not a recognized UUID / ULID / TypeID / NanoID."
         }
     }
 }

@@ -51,6 +51,67 @@ class IdToolkitTest {
     }
 
     @Test
+    fun `TypeID decodes to the spec's published UUIDs (jetify-com typeid valid vectors)`() {
+        // github.com/jetify-com/typeid — spec/valid.yml (canonical conformance vectors):
+        //   valid-uuidv7:    prefix_01h455vb4pex5vsknk084sn02q -> 01890a5d-ac96-774b-bcce-b302099a8057
+        //   valid-alphabet:  prefix_0123456789abcdefghjkmnpqrs -> 0110c853-1d09-52d8-d73e-1194e95b5f19
+        //   max-valid:       7zzzzzzzzzzzzzzzzzzzzzzzzz         -> ffffffff-ffff-ffff-ffff-ffffffffffff
+        //   nil:             00000000000000000000000000         -> 00000000-0000-0000-0000-000000000000
+        //   one:             00000000000000000000000001         -> 00000000-0000-0000-0000-000000000001
+        //   ten:             0000000000000000000000000a         -> 00000000-0000-0000-0000-00000000000a
+        //   sixteen:         0000000000000000000000000g         -> 00000000-0000-0000-0000-000000000010
+        //   thirty-two:      00000000000000000000000010         -> 00000000-0000-0000-0000-000000000020
+        //   prefix-underscore: pre_fix_00000000000000000000000000 (prefix "pre_fix")
+        val v7 = IdToolkit.parseTypeId("prefix_01h455vb4pex5vsknk084sn02q")!!
+        assertEquals("prefix", v7.prefix)
+        assertEquals("01890a5d-ac96-774b-bcce-b302099a8057", v7.uuid)
+
+        assertEquals("0110c853-1d09-52d8-d73e-1194e95b5f19",
+            IdToolkit.parseTypeId("prefix_0123456789abcdefghjkmnpqrs")!!.uuid)
+        assertEquals("ffffffff-ffff-ffff-ffff-ffffffffffff",
+            IdToolkit.parseTypeId("7zzzzzzzzzzzzzzzzzzzzzzzzz")!!.uuid)
+        assertEquals("00000000-0000-0000-0000-000000000000",
+            IdToolkit.parseTypeId("00000000000000000000000000")!!.uuid)
+        assertEquals("00000000-0000-0000-0000-000000000001",
+            IdToolkit.parseTypeId("00000000000000000000000001")!!.uuid)
+        assertEquals("00000000-0000-0000-0000-00000000000a",
+            IdToolkit.parseTypeId("0000000000000000000000000a")!!.uuid)
+        assertEquals("00000000-0000-0000-0000-000000000010",
+            IdToolkit.parseTypeId("0000000000000000000000000g")!!.uuid)
+        assertEquals("00000000-0000-0000-0000-000000000020",
+            IdToolkit.parseTypeId("00000000000000000000000010")!!.uuid)
+        assertEquals("pre_fix", IdToolkit.parseTypeId("pre_fix_00000000000000000000000000")!!.prefix)
+
+        // Encode direction anchored to the same external pair (not a self-computed round-trip):
+        assertEquals("prefix_01h455vb4pex5vsknk084sn02q",
+            IdToolkit.typeIdFromUuid("prefix", "01890a5d-ac96-774b-bcce-b302099a8057"))
+    }
+
+    @Test
+    fun `TypeID rejects malformed prefixes and suffixes`() {
+        assertNull(IdToolkit.parseTypeId("PREFIX_00000000000000000000000000")) // prefix must be lowercase
+        assertNull(IdToolkit.parseTypeId("_00000000000000000000000000"))       // separator implies a prefix
+        assertNull(IdToolkit.parseTypeId("prefix_0000000000000000000000000"))  // 25-char suffix (too short)
+        assertNull(IdToolkit.parseTypeId("prefix_8zzzzzzzzzzzzzzzzzzzzzzzzz")) // leading char > '7' overflows
+        assertNull(IdToolkit.parseTypeId("prefix_0123456789abcdefghijklmnop")) // 'i','l','o' not in the alphabet
+        assertTrue(IdToolkit.isValidTypeId("00000000000000000000000000"))
+        assertFalse(IdToolkit.isValidTypeId("not a typeid"))
+    }
+
+    @Test
+    fun `generated TypeID round-trips back to its source UUID v7`() {
+        val rng = Rng(7L)
+        val ts = 1_700_000_000_000L
+        repeat(50) {
+            val tid = IdToolkit.typeId("user", rng, ts)
+            val info = IdToolkit.parseTypeId(tid)!!
+            assertEquals("user", info.prefix)
+            assertEquals(7, IdToolkit.inspectUuid(info.uuid)!!.version)
+            assertEquals(ts, IdToolkit.inspectUuid(info.uuid)!!.timestampMillis)
+        }
+    }
+
+    @Test
     fun `KSUID timestamp reference (segmentio ksuid)`() {
         // segmentio/ksuid README inspect example 0ujtsYcgvSTl8PAuAdqWYSMnLOv: raw 0669F7EF...,
         // Timestamp component 107608047 → unix 1507608047 (2017-10-10 UTC).
