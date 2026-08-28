@@ -6,9 +6,11 @@ import io.github.vadimtoptunov.kassitestdata.algo.Checksums
  * Parses and validates travel-document Machine Readable Zones (ICAO Doc 9303): TD1 (3 lines of
  * 30, ID cards), TD2 (2 lines of 36) and TD3 (2 lines of 44, passports), plus machine-readable
  * visas MRV-A (2 lines of 44) and MRV-B (2 lines of 36) — distinguished by the 'V' document type
- * and carrying no composite check digit. Every per-field check digit (and the composite check
- * digit where present) is verified with the same ICAO 7-3-1 routine already used by the DE ID
- * card generator ([Checksums.icao731CheckDigit]); this is the reader companion to that writer.
+ * and carrying no composite check digit. It also reads the (pre-2021) French national identity
+ * card, a non-ICAO 2-lines-of-36 layout with its own field order and three check digits, keyed by
+ * the "IDFRA" line-1 prefix. Every per-field check digit (and the composite check digit where
+ * present) is verified with the same ICAO 7-3-1 routine already used by the DE ID card generator
+ * ([Checksums.icao731CheckDigit]); this is the reader companion to that writer.
  */
 object MrzInspector {
 
@@ -18,6 +20,7 @@ object MrzInspector {
         TD3(2, 44),
         MRVA(2, 44),
         MRVB(2, 36),
+        FRENCH_ID(2, 36),
     }
 
     /** One check-digit-bearing field: its raw value, the check-digit character read from the MRZ, and the verdict. */
@@ -39,14 +42,15 @@ object MrzInspector {
         val givenNames: String,
         val documentNumber: FieldCheck,
         val dateOfBirth: FieldCheck,
-        val expiryDate: FieldCheck,
+        /** Null for the French national ID card, whose MRZ carries no expiry date. */
+        val expiryDate: FieldCheck?,
         /** TD3 only — the optional personal-number field carries its own check digit there. */
         val personalNumber: FieldCheck?,
         /** Null for machine-readable visas (MRV-A/MRV-B), which have no composite check digit. */
         val composite: FieldCheck?,
     ) {
         val allChecksValid: Boolean
-            get() = documentNumber.valid && dateOfBirth.valid && expiryDate.valid &&
+            get() = documentNumber.valid && dateOfBirth.valid && (expiryDate?.valid ?: true) &&
                 (personalNumber?.valid ?: true) && (composite?.valid ?: true)
     }
 
@@ -58,9 +62,11 @@ object MrzInspector {
     fun inspect(rawLines: List<String>): Outcome {
         val lines = rawLines.map { it.trim().uppercase() }.filter { it.isNotEmpty() }
         val isVisa = lines.firstOrNull()?.startsWith("V") == true // MRV document type is 'V'
+        val isFrenchId = lines.firstOrNull()?.startsWith("IDFRA") == true // French national ID key
         val format = when {
             lines.size == 2 && lines.all { it.length == 44 } -> if (isVisa) Format.MRVA else Format.TD3
-            lines.size == 2 && lines.all { it.length == 36 } -> if (isVisa) Format.MRVB else Format.TD2
+            lines.size == 2 && lines.all { it.length == 36 } ->
+                if (isFrenchId) Format.FRENCH_ID else if (isVisa) Format.MRVB else Format.TD2
             lines.size == 3 && lines.all { it.length == 30 } -> Format.TD1
             else -> return Outcome.Invalid(
                 "Expected 2 lines of 44 chars (TD3/passport or MRV-A visa), 2 of 36 (TD2 or MRV-B visa), " +
@@ -76,6 +82,7 @@ object MrzInspector {
                     Format.TD1 -> parseTd1(lines)
                     Format.MRVA -> parseMrva(lines)
                     Format.MRVB -> parseMrvb(lines)
+                    Format.FRENCH_ID -> parseFrenchId(lines)
                 },
             )
         } catch (e: IndexOutOfBoundsException) {
@@ -214,6 +221,36 @@ object MrzInspector {
         return MrzResult(
             Format.TD1, documentType, issuingCountry, nationality, sex, surname, given,
             docNumberCheck, dobCheck, expiryCheck, null, compositeCheck,
+        )
+    }
+
+    /**
+     * Pre-2021 French national identity card — a non-ICAO 2×36 layout:
+     *  line 1: "ID" · "FRA" · surname[5..30) · administrative code[30..36)
+     *  line 2: 12-char document number (issue YYMM + office + serial) · its check digit · given
+     *          name(s)[13..27) · birth date YYMMDD · its check digit · sex · composite check digit.
+     * The document-number check covers line-2 [0..12); the composite covers all of line 1 plus
+     * line-2 [0..35). There is no expiry date and no nationality field in this MRZ.
+     */
+    private fun parseFrenchId(lines: List<String>): MrzResult {
+        val (line1, line2) = lines
+        val documentType = line1.substring(0, 2).trim('<') // "ID"
+        val issuingCountry = line1.substring(2, 5)          // "FRA"
+        val surname = line1.substring(5, 30).replace('<', ' ').trim()
+
+        val docNumber = line2.substring(0, 12)
+        val docNumberCheck = fieldCheck("Document number", docNumber, line2[12])
+        val given = line2.substring(13, 27).replace('<', ' ').trim()
+        val dob = line2.substring(27, 33)
+        val dobCheck = fieldCheck("Date of birth", dob, line2[33])
+        val sex = line2.substring(34, 35)
+        val compositeInput = line1 + line2.substring(0, 35)
+        val compositeCheck = fieldCheck("Composite", compositeInput, line2[35])
+
+        // A national ID implies the issuing country as nationality; the MRZ has no separate field.
+        return MrzResult(
+            Format.FRENCH_ID, documentType, issuingCountry, issuingCountry, sex, surname, given,
+            docNumberCheck, dobCheck, null, null, compositeCheck,
         )
     }
 }

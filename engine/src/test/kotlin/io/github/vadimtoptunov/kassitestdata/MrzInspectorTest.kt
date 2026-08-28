@@ -27,11 +27,11 @@ class MrzInspectorTest {
         assertEquals("ANNA MARIA", r.givenNames)
         assertEquals("L898902C3", r.documentNumber.value)
         assertEquals("740812", r.dateOfBirth.value)
-        assertEquals("120415", r.expiryDate.value)
+        assertEquals("120415", r.expiryDate!!.value)
 
         assertTrue(r.documentNumber.valid)
         assertTrue(r.dateOfBirth.valid)
-        assertTrue(r.expiryDate.valid)
+        assertTrue(r.expiryDate!!.valid)
         assertTrue(r.personalNumber!!.valid)
         assertTrue(r.composite!!.valid)
         assertTrue(r.allChecksValid)
@@ -46,7 +46,7 @@ class MrzInspectorTest {
         assertFalse(r.documentNumber.valid)
         assertEquals('6', r.documentNumber.expectedCheckDigit) // the inspector reports the correct digit
         assertTrue(r.dateOfBirth.valid)
-        assertTrue(r.expiryDate.valid)
+        assertTrue(r.expiryDate!!.valid)
         assertFalse(r.allChecksValid)
     }
 
@@ -84,7 +84,7 @@ class MrzInspectorTest {
         assertEquals("UTO", r.issuingCountry)
         assertTrue(r.documentNumber.valid)
         assertTrue(r.dateOfBirth.valid)
-        assertTrue(r.expiryDate.valid)
+        assertTrue(r.expiryDate!!.valid)
         assertTrue(r.composite!!.valid)
         assertEquals("ERIKSSON", r.surname)
         assertEquals("ANNA MARIA", r.givenNames)
@@ -112,11 +112,11 @@ class MrzInspectorTest {
         assertEquals("ANNA MARIA", r.givenNames)
         assertEquals("L8988901C", r.documentNumber.value)
         assertEquals("400907", r.dateOfBirth.value)
-        assertEquals("961210", r.expiryDate.value)
+        assertEquals("961210", r.expiryDate!!.value)
 
         assertTrue(r.documentNumber.valid)
         assertTrue(r.dateOfBirth.valid)
-        assertTrue(r.expiryDate.valid)
+        assertTrue(r.expiryDate!!.valid)
         assertNull(r.personalNumber)
         assertNull(r.composite) // MRV has no composite check digit
         assertTrue(r.allChecksValid)
@@ -130,10 +130,10 @@ class MrzInspectorTest {
         assertEquals("V", r.documentType)
         assertEquals("L8988901C", r.documentNumber.value)
         assertEquals("400907", r.dateOfBirth.value)
-        assertEquals("961210", r.expiryDate.value)
+        assertEquals("961210", r.expiryDate!!.value)
         assertTrue(r.documentNumber.valid)
         assertTrue(r.dateOfBirth.valid)
-        assertTrue(r.expiryDate.valid)
+        assertTrue(r.expiryDate!!.valid)
         assertNull(r.composite)
         assertTrue(r.allChecksValid)
     }
@@ -142,9 +142,75 @@ class MrzInspectorTest {
     fun `MRV-A - a corrupted expiry check digit is caught`() {
         val corrupted = mrvaLine2.substring(0, 27) + "0" + mrvaLine2.substring(28) // expiry check 9 -> 0
         val r = (MrzInspector.inspect(listOf(mrvaLine1, corrupted)) as MrzInspector.Outcome.Success).result
-        assertFalse(r.expiryDate.valid)
-        assertEquals('9', r.expiryDate.expectedCheckDigit)
+        assertFalse(r.expiryDate!!.valid)
+        assertEquals('9', r.expiryDate!!.expectedCheckDigit)
         assertTrue(r.documentNumber.valid)
+        assertFalse(r.allChecksValid)
+    }
+
+    // Pre-2021 French national identity card specimens, with every parsed field and check digit as
+    // published by the established npm `mrz` package (github.com/cheminfo/mrz), which ships a
+    // dedicated French-national-ID parser: src/parse/__tests__/frenchNationalId.test.ts.
+    //   Specimen A (with administrative code): doc number 1710GVA12345 -> check 1, DOB 911231 -> 1, composite 2.
+    //   Specimen B (no administrative code):   doc number 940992310285 -> check 4, DOB 651206 -> 8, composite 4.
+    // The three check digits are the ICAO 7-3-1 routine over, respectively, line-2 [0..12), the
+    // birth date, and (line 1) + (line-2 [0..35)) — verified against the fixtures above.
+    private val frIdA = listOf(
+        "IDFRATEST<NAME<<<<<<<<<<<<<<<<0CHE02",
+        "1710GVA123451ROBERTA<<<<<<<9112311F2",
+    )
+    private val frIdB = listOf(
+        "IDFRABERTHIER<<<<<<<<<<<<<<<<<<<<<<<",
+        "9409923102854CORINNE<<<<<<<6512068F4",
+    )
+
+    @Test
+    fun `French national ID - reference specimen A parses with every check digit valid`() {
+        val r = (MrzInspector.inspect(frIdA) as MrzInspector.Outcome.Success).result
+
+        assertEquals(MrzInspector.Format.FRENCH_ID, r.format) // "IDFRA" -> French ID, not TD2
+        assertEquals("ID", r.documentType)
+        assertEquals("FRA", r.issuingCountry)
+        assertEquals("TEST NAME", r.surname)
+        assertEquals("ROBERTA", r.givenNames)
+        assertEquals("F", r.sex)
+        assertEquals("1710GVA12345", r.documentNumber.value)
+        assertEquals('1', r.documentNumber.checkDigit)
+        assertEquals("911231", r.dateOfBirth.value)
+        assertEquals('1', r.dateOfBirth.checkDigit)
+
+        assertTrue(r.documentNumber.valid)
+        assertTrue(r.dateOfBirth.valid)
+        assertNull(r.expiryDate)      // the French ID MRZ has no expiry date
+        assertNull(r.personalNumber)
+        assertEquals('2', r.composite!!.checkDigit)
+        assertTrue(r.composite!!.valid)
+        assertTrue(r.allChecksValid)
+    }
+
+    @Test
+    fun `French national ID - reference specimen B (no administrative code) is fully valid`() {
+        val r = (MrzInspector.inspect(frIdB) as MrzInspector.Outcome.Success).result
+
+        assertEquals(MrzInspector.Format.FRENCH_ID, r.format)
+        assertEquals("BERTHIER", r.surname)
+        assertEquals("CORINNE", r.givenNames)
+        assertEquals("940992310285", r.documentNumber.value)
+        assertEquals("651206", r.dateOfBirth.value)
+        assertTrue(r.documentNumber.valid)  // published check digit 4
+        assertTrue(r.dateOfBirth.valid)     // published check digit 8
+        assertTrue(r.composite!!.valid)     // published composite 4
+        assertTrue(r.allChecksValid)
+    }
+
+    @Test
+    fun `French national ID - a corrupted composite check digit is caught`() {
+        val badLine2 = frIdB[1].substring(0, 35) + "5" // composite 4 -> 5
+        val r = (MrzInspector.inspect(listOf(frIdB[0], badLine2)) as MrzInspector.Outcome.Success).result
+        assertFalse(r.composite!!.valid)
+        assertEquals('4', r.composite!!.expectedCheckDigit) // inspector reports the correct digit
+        assertTrue(r.documentNumber.valid)
+        assertTrue(r.dateOfBirth.valid)
         assertFalse(r.allChecksValid)
     }
 }

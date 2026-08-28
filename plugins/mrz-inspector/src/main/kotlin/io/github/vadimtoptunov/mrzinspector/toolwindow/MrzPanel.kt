@@ -25,7 +25,7 @@ class MrzPanel : JPanel(BorderLayout()) {
 
         val top = JPanel(BorderLayout()).apply {
             border = JBUI.Borders.emptyBottom(8)
-            add(JBLabel("MRZ lines (one per line — TD3 2×44, TD2 2×36, or TD1 3×30):"), BorderLayout.NORTH)
+            add(JBLabel("MRZ lines (one per line — TD3 2×44, TD2 2×36, TD1 3×30, or French ID 2×36):"), BorderLayout.NORTH)
             add(JBScrollPane(input), BorderLayout.CENTER)
         }
         add(top, BorderLayout.NORTH)
@@ -59,7 +59,7 @@ class MrzPanel : JPanel(BorderLayout()) {
         appendLine()
         appendField("Document number", r.documentNumber)
         appendField("Date of birth", r.dateOfBirth)
-        appendField("Expiry date", r.expiryDate)
+        r.expiryDate?.let { appendField("Expiry date", it) } // absent on the French national ID
         r.personalNumber?.let { appendField("Personal number", it) }
         r.composite?.let { appendField("Composite", it) } // absent for MRV-A/MRV-B visas
         appendLine()
