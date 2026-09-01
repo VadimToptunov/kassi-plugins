@@ -30,6 +30,10 @@
     ]]></description>
 
     <change-notes><![CDATA[
+    <h3>1.0.1</h3>
+    <ul>
+      <li>Compatibility: insert-at-caret now uses the current editor API (<code>EditorModificationUtilEx</code>), replacing an API scheduled for removal on newer IDE platforms. No behavior change.</li>
+    </ul>
     <h3>1.0.0</h3>
     <ul>
       <li>Initial release: IBAN, Card (PAN), BIC and Persona-JSON insertion in <code>.http</code> files via intention and editor-popup action.</li>
