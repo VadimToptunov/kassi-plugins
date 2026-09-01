@@ -2,7 +2,7 @@ package io.github.vadimtoptunov.httpdatainjector
 
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.Editor
-import com.intellij.openapi.editor.EditorModificationUtil
+import com.intellij.openapi.editor.EditorModificationUtilEx
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.vfs.VirtualFile
@@ -36,6 +36,6 @@ object HttpDataInjector {
     }
 
     private fun insertAtCaret(editor: Editor, text: String) {
-        EditorModificationUtil.insertStringAtCaret(editor, text)
+        EditorModificationUtilEx.insertStringAtCaret(editor, text)
     }
 }
