@@ -7,7 +7,7 @@ plugins {
 }
 
 // Overridable at release time: -PmrzInspectorVersion=1.0.1
-version = (findProperty("pluginVersion") as String?) ?: "1.0.0"
+version = (findProperty("pluginVersion") as String?) ?: "1.4.0"
 
 intellij {
     version.set("2023.2.6")
