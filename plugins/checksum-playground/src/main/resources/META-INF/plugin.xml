@@ -12,8 +12,9 @@
     <ul>
       <li><b>Checksums tab:</b> pick a type to load a valid example (or type / paste your own) and it live-validates against every applicable
       algorithm — IBAN (ISO 7064 mod-97), card Luhn, VAT (DE/GB/CY/NL), Dutch BSN, AU TFN/ABN,
-      BIC/SWIFT, GB NINo, German ID card (ICAO 7-3-1), <b>ISIN, IMEI, EAN-13, LEI, VIN, ISBN-10/13,
-      JMBG</b>, crypto addresses (<b>Bitcoin</b> Base58Check, <b>Ethereum</b> EIP-55), and the Russian
+      BIC/SWIFT, GB NINo, German ID card (ICAO 7-3-1), <b>ISIN, IMEI, EAN-13, GTIN-8/GTIN-14, LEI, VIN,
+      ISBN-10/13, JMBG</b>, <b>FR SIREN/SIRET</b>, <b>UK NHS number</b>, crypto addresses
+      (<b>Bitcoin</b> Base58Check, <b>Ethereum</b> EIP-55), and the Russian
       <b>ИНН, СНИЛС, ОГРН, ОГРНИП</b>. Each check shows ✔ pass or ✘ fail.</li>
       <li><b>Regex tab:</b> a live regular-expression tester — pattern + text → matches with capture groups
       and positions, with clear syntax-error messages. Toggle flags (ignore-case, multiline, dot-all,
@@ -29,6 +30,7 @@
     ]]></description>
 
     <change-notes><![CDATA[
+    <h3>1.11.0</h3><ul><li>More checks: <b>GTIN-8 / EAN-8</b>, <b>GTIN-14</b> (GS1 mod-10), <b>FR SIREN</b> &amp; <b>SIRET</b> (Luhn), and the <b>UK NHS number</b> (weighted mod-11) — each with a loadable valid example.</li></ul>
     <h3>1.10.0</h3><ul><li>The tool window now shows a distinct stripe icon.</li></ul>
     <h3>1.9.0</h3><ul><li>New check: Spanish IBAN national BBAN control digits.</li></ul>
     <h3>1.8.0</h3><ul><li>New check: Norwegian VAT / MVA orgnr (mod-11).</li></ul>

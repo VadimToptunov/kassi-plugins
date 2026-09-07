@@ -50,6 +50,23 @@ object DataInspector {
             results["DE VAT — ISO 7064 MOD 11,10"] = Checksums.isValidGermanVat(compact)
             results["UK VAT — modulo-97"] = Checksums.isValidUkVat(compact)
             results["NO VAT (MVA/orgnr) — mod-11"] = Checksums.isValidNorwegianVat(compact)
+            results["FR SIREN — Luhn"] = Checksums.isValidSiren(compact)
+        }
+
+        // GTIN-8 / EAN-8.
+        if (digitsOnly && compact.length == 8) {
+            results["GTIN-8 / EAN-8 — GS1 mod-10"] = Checksums.isValidGtin8(compact)
+        }
+
+        // UK NHS number (10 digits, weighted mod-11).
+        if (digitsOnly && compact.length == 10) {
+            results["UK NHS number — weighted mod-11"] = Checksums.isValidNhsNumber(compact)
+        }
+
+        // 14-digit schemes: GTIN-14 and the French SIRET (establishment).
+        if (digitsOnly && compact.length == 14) {
+            results["GTIN-14 — GS1 mod-10"] = Checksums.isValidGtin14(compact)
+            results["FR SIRET — Luhn"] = Checksums.isValidSiret(compact)
         }
 
         // AU ABN.

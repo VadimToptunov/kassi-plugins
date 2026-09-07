@@ -13,6 +13,29 @@ import org.junit.jupiter.api.Test
 class ChecksumsTest {
 
     @Test
+    fun `GTIN-8 and GTIN-14 (GS1 published examples)`() {
+        assertTrue(Checksums.isValidGtin8("96385074"))       // Wikipedia EAN-8 worked example
+        assertFalse(Checksums.isValidGtin8("96385075"))      // wrong check digit
+        assertTrue(Checksums.isValidGtin14("00036000291452")) // Wikipedia UPC-A 036000291452, GTIN-14 form
+        assertFalse(Checksums.isValidGtin14("00036000291453"))
+    }
+
+    @Test
+    fun `FR SIREN and SIRET (Luhn, published examples)`() {
+        assertTrue(Checksums.isValidSiren("732829320"))        // French Wikipedia "Luhn" worked example
+        assertFalse(Checksums.isValidSiren("732829321"))
+        assertTrue(Checksums.isValidSiret("73282932000074"))   // establishment SIRET of the same example
+        assertFalse(Checksums.isValidSiret("73282932000075"))
+    }
+
+    @Test
+    fun `UK NHS number (weighted mod-11, published test number)`() {
+        assertTrue(Checksums.isValidNhsNumber("9434765919"))   // NHS Digital sample valid number
+        assertFalse(Checksums.isValidNhsNumber("9434765918"))  // wrong check digit
+        assertFalse(Checksums.isValidNhsNumber("123456789"))   // wrong length
+    }
+
+    @Test
     fun `IBAN mod-97 accepts known-valid and rejects corrupted`() {
         assertTrue(Checksums.isValidIbanMod97("GB82 WEST 1234 5698 7654 32"))
         assertTrue(Checksums.isValidIbanMod97("DE89370400440532013000"))

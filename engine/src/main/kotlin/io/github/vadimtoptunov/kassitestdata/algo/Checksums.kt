@@ -109,6 +109,40 @@ object Checksums {
         return (10 - sum % 10) % 10 == (value[12] - '0')
     }
 
+    /** GS1 mod-10 check over any GTIN length: right-to-left weights 3,1,3,1,… on the digits before the check. */
+    private fun isValidGtin(value: String, length: Int): Boolean {
+        if (value.length != length || !value.all { it in '0'..'9' }) return false
+        var sum = 0
+        var weight = 3
+        for (i in (length - 2) downTo 0) {
+            sum += (value[i] - '0') * weight
+            weight = if (weight == 3) 1 else 3
+        }
+        return (10 - sum % 10) % 10 == (value[length - 1] - '0')
+    }
+
+    /** GTIN-8 / EAN-8 (GS1 mod-10). */
+    fun isValidGtin8(value: String): Boolean = isValidGtin(value, 8)
+
+    /** GTIN-14 (GS1 mod-10). */
+    fun isValidGtin14(value: String): Boolean = isValidGtin(value, 14)
+
+    /** French SIREN (company): 9 digits, Luhn-valid. */
+    fun isValidSiren(value: String): Boolean = value.length == 9 && isLuhnValid(value)
+
+    /** French SIRET (establishment): 14 digits, Luhn-valid. */
+    fun isValidSiret(value: String): Boolean = value.length == 14 && isLuhnValid(value)
+
+    /** UK NHS number: 10 digits, weighted (10..2) mod-11; check = 11 - (sum % 11), 11→0, 10 is invalid. */
+    fun isValidNhsNumber(value: String): Boolean {
+        if (value.length != 10 || !value.all { it in '0'..'9' }) return false
+        var sum = 0
+        for (i in 0..8) sum += (value[i] - '0') * (10 - i)
+        val remainder = sum % 11
+        val check = (11 - remainder) % 11
+        return check != 10 && check == (value[9] - '0')
+    }
+
     /** LEI (ISO 17442 / ISO 7064 MOD 97-10): 18 alnum + 2 check digits, whole thing ≡ 1 (mod 97). */
     fun isValidLei(value: String): Boolean {
         val s = value.uppercase()
