@@ -10,12 +10,14 @@
     tool, fully offline.
     </p>
     <ul>
-      <li><b>Generate:</b> <b>UUID v4</b> (random), <b>v7</b> (time-ordered), name-based <b>v5</b> (SHA-1) and
-      <b>v3</b> (MD5) from a namespace + name, <b>ULID</b>, <b>TypeID</b> (a type prefix + a UUID v7 in
-      Crockford base32), and <b>NanoID</b> — appended to a list you can select and copy.</li>
+      <li><b>Generate:</b> <b>UUID v1</b> (time-based), <b>v4</b> (random), <b>v6</b> and <b>v7</b>
+      (time-ordered), name-based <b>v5</b> (SHA-1) and <b>v3</b> (MD5) from a namespace + name, <b>ULID</b>,
+      <b>TypeID</b> (a type prefix + a UUID v7 in Crockford base32), and <b>NanoID</b> — appended to a list
+      you can select and copy.</li>
       <li><b>Inspect:</b> paste any value and see what it is — the UUID <b>version</b> and <b>variant</b>,
-      the embedded <b>timestamp</b> for UUID v7 and ULID (decoded to a readable instant), and the
-      <b>prefix + decoded UUID</b> of a TypeID.</li>
+      the embedded <b>timestamp</b> for v1/v6/v7 and ULID (decoded to a readable instant), the <b>node</b>
+      and <b>clock sequence</b> of v1/v6, a <b>Snowflake</b> ID against the Twitter and Discord epochs, and
+      the <b>prefix + decoded UUID</b> of a TypeID.</li>
     </ul>
     <p>Open it from <b>View ▸ Tool Windows ▸ ID Toolkit</b>.</p>
     <p><b>More Kassi tools for QA &amp; fintech:</b>
@@ -25,6 +27,7 @@
     ]]></description>
 
     <change-notes><![CDATA[
+    <h3>1.7.0</h3><ul><li>Generate <b>UUID v1</b> (time-based). Inspect now decodes the <b>node</b> and <b>clock sequence</b> of v1/v6 UUIDs, and reads a Snowflake ID against both the <b>Twitter</b> and <b>Discord</b> epochs.</li></ul>
     <h3>1.6.0</h3><ul><li>The tool window now shows a distinct stripe icon.</li></ul>
     <h3>1.5.0</h3><ul><li>Generate and inspect <b>TypeID</b> (jetify): a type prefix + a UUID v7 encoded in lowercase Crockford base32; inspection shows the prefix and the decoded UUID.</li></ul>
     <h3>1.4.0</h3><ul><li>Inspect Snowflake IDs: decode timestamp, worker and sequence.</li></ul>

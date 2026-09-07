@@ -32,12 +32,14 @@ class UuidToolkitPanel : JPanel(BorderLayout()) {
 
     private companion object {
         const val TWITTER_EPOCH_MS = 1_288_834_974_657L // Snowflake default epoch
+        const val DISCORD_EPOCH_MS = 1_420_070_400_000L // Discord's Snowflake epoch (2015-01-01)
     }
 
     init {
         border = JBUI.Borders.empty(8)
 
         val buttons = JPanel(FlowLayout(FlowLayout.LEFT, 6, 0)).apply {
+            add(genButton("UUID v1") { IdToolkit.uuidV1(rng, System.currentTimeMillis()) })
             add(genButton("UUID v4") { IdToolkit.uuidV4(rng) })
             add(genButton("UUID v6") { IdToolkit.uuidV6(rng, System.currentTimeMillis()) })
             add(genButton("UUID v7") { IdToolkit.uuidV7(rng, System.currentTimeMillis()) })
@@ -126,14 +128,20 @@ class UuidToolkitPanel : JPanel(BorderLayout()) {
             uuid != null -> buildString {
                 append("UUID v${uuid.version} · variant ${uuid.variant}")
                 uuid.timestampMillis?.let { append(" · time ${Instant.ofEpochMilli(it)}") }
+                uuid.node?.let { append(" · node %012x".format(it)) }
+                uuid.clockSeq?.let { append(" · clock-seq $it") }
             }
             typeId != null ->
                 "TypeID · prefix \"${typeId.prefix}\" · UUID ${typeId.uuid}"
             IdToolkit.isValidUlid(text) ->
                 "ULID · time ${Instant.ofEpochMilli(IdToolkit.ulidTimestampMillis(text)!!)}"
             ksuidTime != null -> "KSUID · time ${Instant.ofEpochSecond(ksuidTime)}"
-            snowflakeId != null ->
-                "Snowflake · time ${Instant.ofEpochMilli(IdToolkit.snowflakeInfo(snowflakeId, TWITTER_EPOCH_MS).timestampMillis)} (Twitter epoch)"
+            snowflakeId != null -> {
+                val tw = IdToolkit.snowflakeInfo(snowflakeId, TWITTER_EPOCH_MS)
+                val dc = IdToolkit.snowflakeInfo(snowflakeId, DISCORD_EPOCH_MS)
+                "Snowflake · Twitter epoch ${Instant.ofEpochMilli(tw.timestampMillis)} · Discord epoch " +
+                    "${Instant.ofEpochMilli(dc.timestampMillis)} · dc ${tw.datacenterId} worker ${tw.workerId} seq ${tw.sequence}"
+            }
             IdToolkit.isValidNanoId(text) -> "NanoID · ${text.length} chars (URL-safe alphabet)"
             else -> "Not a recognized UUID / ULID / TypeID / NanoID."
         }

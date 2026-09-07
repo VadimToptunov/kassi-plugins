@@ -43,6 +43,27 @@ class IdToolkitTest {
     }
 
     @Test
+    fun `UUID v1 reference (RFC 4122 example) decodes fields`() {
+        // RFC 4122's own worked example UUID. Fields read directly per the v1 layout (external anchor).
+        val v1 = IdToolkit.inspectUuid("f81d4fae-7dec-11d0-a765-00a0c91e6bf6")!!
+        assertEquals(1, v1.version)
+        assertEquals("RFC 4122 (10x)", v1.variant)
+        assertEquals(0x00A0C91E6BF6L, v1.node)      // node = last 48 bits
+        assertEquals(0x2765, v1.clockSeq)           // clock_seq = (a7 & 3f)<<8 | 65
+    }
+
+    @Test
+    fun `UUID v1 generated is well-formed and round-trips its timestamp`() {
+        val ms = 1_700_000_000_000L
+        val id = IdToolkit.uuidV1(Rng(), ms)
+        val info = IdToolkit.inspectUuid(id)!!
+        assertEquals(1, info.version)
+        assertEquals("RFC 4122 (10x)", info.variant)
+        assertEquals(ms, info.timestampMillis)      // 60-bit Gregorian clock round-trips to unix ms
+        assertTrue((info.node!! and 0x010000000000L) != 0L) // multicast bit set (random node, not a MAC)
+    }
+
+    @Test
     fun `ULID timestamp bounds (per spec)`() {
         // The ULID spec documents the max timestamp 7ZZZZZZZZZ = 2^48 - 1, and min = 0.
         assertEquals(281474976710655L, IdToolkit.ulidTimestampMillis("7ZZZZZZZZZ0000000000000000"))

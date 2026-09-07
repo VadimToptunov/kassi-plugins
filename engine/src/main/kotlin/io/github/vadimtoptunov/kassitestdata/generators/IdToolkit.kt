@@ -57,7 +57,31 @@ object IdToolkit {
         return formatUuid(b)
     }
 
-    data class UuidInfo(val version: Int, val variant: String, val timestampMillis: Long?)
+    /** Gapless UUID version 1 (RFC 4122): 60-bit Gregorian timestamp, 14-bit clock sequence, 48-bit node.
+     *  The node is randomized with its multicast bit set (per RFC 4122 §4.5) to mark it as not a real MAC. */
+    fun uuidV1(rng: Rng, unixMillis: Long): String {
+        val greg = unixMillis * 10000L + GREG_UNIX_OFFSET_100NS
+        val timeLow = greg and 0xFFFFFFFFL
+        val timeMid = (greg ushr 32) and 0xFFFFL
+        val timeHi = (greg ushr 48) and 0x0FFFL
+        val b = randomBytes(rng, 16)
+        b[0] = ((timeLow ushr 24) and 0xFF).toByte(); b[1] = ((timeLow ushr 16) and 0xFF).toByte()
+        b[2] = ((timeLow ushr 8) and 0xFF).toByte();  b[3] = (timeLow and 0xFF).toByte()
+        b[4] = ((timeMid ushr 8) and 0xFF).toByte();  b[5] = (timeMid and 0xFF).toByte()
+        b[6] = (0x10 or ((timeHi ushr 8).toInt() and 0x0F)).toByte() // version 1 + high nibble of time_hi
+        b[7] = (timeHi and 0xFF).toByte()
+        b[8] = ((b[8].toInt() and 0x3F) or 0x80).toByte() // variant 10xx (clock_seq_hi)
+        b[10] = (b[10].toInt() or 0x01).toByte() // multicast bit: random node, not a MAC
+        return formatUuid(b)
+    }
+
+    data class UuidInfo(
+        val version: Int,
+        val variant: String,
+        val timestampMillis: Long?,
+        val node: Long? = null,
+        val clockSeq: Int? = null,
+    )
 
     private val UUID_RE =
         Regex("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")
@@ -84,9 +108,19 @@ object IdToolkit {
                 val greg = (timeHigh shl 28) or (timeMid shl 12) or timeLow
                 (greg - GREG_UNIX_OFFSET_100NS) / 10000
             }
+            1 -> {
+                val timeLow = hex.substring(0, 8).toLong(16)
+                val timeMid = hex.substring(8, 12).toLong(16)
+                val timeHi = hex.substring(13, 16).toLong(16) // skip version nibble at index 12
+                val greg = (timeHi shl 48) or (timeMid shl 32) or timeLow
+                (greg - GREG_UNIX_OFFSET_100NS) / 10000
+            }
             else -> null
         }
-        return UuidInfo(version, variant, ts)
+        // Clock sequence (14 bits) and node (48 bits) are meaningful for the time-MAC layout (v1/v6).
+        val clockSeq = if (version == 1 || version == 6) ((hex.substring(16, 18).toInt(16) and 0x3F) shl 8) or hex.substring(18, 20).toInt(16) else null
+        val node = if (version == 1 || version == 6) hex.substring(20, 32).toLong(16) else null
+        return UuidInfo(version, variant, ts, node, clockSeq)
     }
 
     // ---------------------------------------------------------------- ULID
