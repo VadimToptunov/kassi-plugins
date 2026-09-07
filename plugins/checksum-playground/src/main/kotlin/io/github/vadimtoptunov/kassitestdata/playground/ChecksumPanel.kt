@@ -108,6 +108,11 @@ class ChecksumPanel : JPanel(BorderLayout()) {
             "DK VAT (CVR)" to "13585628",
             "NO VAT (MVA)" to "988077917",
             "IBAN (ES) + BBAN" to "ES9121000418450200051332",
+            "GTIN-8 / EAN-8" to "96385074",
+            "GTIN-14" to "00036000291452",
+            "FR SIREN" to "732829320",
+            "FR SIRET" to "73282932000074",
+            "UK NHS number" to "9434765919",
         )
     }
 }
