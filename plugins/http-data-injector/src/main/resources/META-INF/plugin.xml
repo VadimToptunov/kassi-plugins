@@ -14,6 +14,8 @@
       <li><b>IBAN</b> — every European country, ISO 7064 mod-97 valid (plus an invalid variant for negative tests).</li>
       <li><b>Card (PAN)</b> — Luhn-valid, from payment-gateway <i>test</i> BIN ranges only, per network (Visa/Mastercard/Amex).</li>
       <li><b>BIC/SWIFT</b> — structurally valid, per country.</li>
+      <li><b>National ID</b> — NL BSN, DE ID card, AU TFN, GB NINo, CY ID — checksum-valid (plus an invalid variant).</li>
+      <li><b>VAT / Tax ID</b> — CY/DE/NL/GB VAT and AU ABN — checksum-valid (plus an invalid variant).</li>
       <li><b>Persona</b> — a coherent identity (name, DOB, address, IBAN, BIC) as a ready-to-paste JSON object.</li>
     </ul>
     <p>
@@ -30,6 +32,8 @@
     ]]></description>
 
     <change-notes><![CDATA[
+    <h3>1.1.0</h3>
+    <ul><li>More data types: <b>National ID</b> (NL/DE/AU/GB/CY) and <b>VAT / Tax ID</b> (CY/DE/NL/GB VAT, AU ABN) — each checksum-valid with an invalid variant for negative tests.</li></ul>
     <h3>1.0.1</h3>
     <ul>
       <li>Compatibility: insert-at-caret now uses the current editor API (<code>EditorModificationUtilEx</code>), replacing an API scheduled for removal on newer IDE platforms. No behavior change.</li>
