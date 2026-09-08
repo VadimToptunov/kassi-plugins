@@ -1,8 +1,10 @@
 package io.github.vadimtoptunov.kassitestdata
 
 import io.github.vadimtoptunov.kassitestdata.algo.Checksums
+import io.github.vadimtoptunov.kassitestdata.core.Country
 import io.github.vadimtoptunov.kassitestdata.generators.BicGenerator
 import io.github.vadimtoptunov.kassitestdata.generators.HttpBodyDataCatalog
+import io.github.vadimtoptunov.kassitestdata.generators.NationalIdGenerator
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -10,7 +12,7 @@ import org.junit.jupiter.api.Test
 
 class HttpBodyDataCatalogTest {
 
-    private val allowedGroups = setOf("IBAN", "Card", "BIC", "Persona")
+    private val allowedGroups = setOf("IBAN", "Card", "BIC", "National ID", "VAT / Tax ID", "Persona")
 
     private fun jsonField(json: String, key: String): String {
         val match = Regex("\"$key\":\\s*\"([^\"]*)\"").find(json)
@@ -69,6 +71,22 @@ class HttpBodyDataCatalogTest {
             assertTrue(json.contains("\"dateOfBirth\""), "missing dateOfBirth: ${item.label}")
             val bic = jsonField(json, "bic")
             assertTrue(BicGenerator.isStructurallyValid(bic), "embedded BIC not structurally valid: ${item.label} -> $bic")
+        }
+    }
+
+    @Test
+    fun `National ID items pass or fail their scheme check exactly as labelled`() {
+        val items = HttpBodyDataCatalog.items().filter { it.group == "National ID" }
+        assertTrue(items.isNotEmpty(), "expected National ID items")
+        for (item in items) {
+            val code = Regex("\\((\\w{2})\\)").find(item.label)!!.groupValues[1]
+            val country = Country.entries.first { it.code == code }
+            val value = item.produce(1L)
+            if ("invalid" in item.label) {
+                assertFalse(NationalIdGenerator.isValid(country, value), "expected invalid: ${item.label} -> $value")
+            } else {
+                assertTrue(NationalIdGenerator.isValid(country, value), "expected valid: ${item.label} -> $value")
+            }
         }
     }
 
