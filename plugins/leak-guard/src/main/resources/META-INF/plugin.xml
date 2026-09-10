@@ -16,10 +16,12 @@
       <li><b>IBAN</b> — passes the ISO 7064 mod-97 check, but isn't one of Kassi's own reserved test IBANs.</li>
       <li><b>US SSN</b> — structurally issuable (area/group/serial outside the SSA's never-issued ranges),
       so it could plausibly be assigned to a real person.</li>
+      <li><b>Secrets</b> — an <b>AWS access key ID</b> (<code>AKIA…</code>), a <b>JWT</b>, or a <b>PEM
+      private-key</b> block — high-precision patterns that shouldn't sit in a repo.</li>
     </ul>
     <p>
-    Each finding comes with a one-click quick-fix: replace it with a synthetic, checksum-valid equivalent
-    drawn from a reserved test range — so re-scanning never re-flags the fix.
+    Financial/PII findings offer a one-click <b>replace with a synthetic, checksum-valid equivalent</b>
+    from a reserved test range (so re-scanning never re-flags the fix); secrets offer a <b>redact</b> fix.
     </p>
     <p>100% offline and algorithmic. Zero network calls, zero data collection, nothing ever leaves your IDE.</p>
     <p><b>More Kassi tools for QA &amp; fintech:</b>
@@ -30,6 +32,7 @@
     ]]></description>
 
     <change-notes><![CDATA[
+    <h3>1.1.0</h3><ul><li>More detectors: <b>AWS access key ID</b>, <b>JWT</b>, and <b>PEM private-key</b> blocks — high-precision secret patterns, each with a one-click <b>redact</b> fix.</li></ul>
     <h3>1.0.0</h3>
     <ul>
       <li>Initial release: whole-file inspection for real-looking card numbers, IBANs and US SSNs, with a

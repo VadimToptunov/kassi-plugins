@@ -6,13 +6,19 @@ import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiDocumentManager
 
-/** Replaces the flagged range with a Kassi-generated, checksum-valid synthetic equivalent. */
+/**
+ * Replaces the flagged range with either a Kassi-generated, checksum-valid synthetic equivalent
+ * ([synthetic] = true, for card/IBAN/SSN) or a redaction placeholder ([synthetic] = false, for secrets
+ * that have no synthetic test equivalent).
+ */
 class ReplaceWithSyntheticFix(
     private val kindLabel: String,
     private val replacement: String,
+    private val synthetic: Boolean = true,
 ) : LocalQuickFix {
 
-    override fun getFamilyName(): String = "Replace with synthetic test $kindLabel"
+    override fun getFamilyName(): String =
+        if (synthetic) "Replace with synthetic test $kindLabel" else "Redact $kindLabel"
 
     override fun applyFix(project: Project, descriptor: ProblemDescriptor) {
         val element = descriptor.psiElement

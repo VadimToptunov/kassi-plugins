@@ -72,6 +72,32 @@ class LeakGuardTest {
     }
 
     @Test
+    fun `secret detectors flag AWS key, JWT and PEM private key with a redaction fix`() {
+        // AWS access key ID — AWS-documented format (AKIA + 16 upper-alnum).
+        val aws = LeakGuard.scan("aws_access_key_id = AKIAIOSFODNN7EXAMPLE").single()
+        assertEquals(LeakGuard.Kind.AWS_ACCESS_KEY, aws.kind)
+        assertEquals("AKIAIOSFODNN7EXAMPLE", aws.matched)
+        assertEquals(false, aws.kind.synthetic) // redact, not synthetic-replace
+        assertTrue(LeakGuard.scan(aws.replacement).isEmpty(), "the redaction placeholder must not re-flag")
+
+        // JWT — three base64url segments, header starts eyJ.
+        val jwt = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NSJ9.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U"
+        assertEquals(LeakGuard.Kind.JWT, LeakGuard.scan("token: $jwt").single().kind)
+
+        // PEM private-key block header.
+        assertEquals(
+            LeakGuard.Kind.PRIVATE_KEY,
+            LeakGuard.scan("-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEA...\n-----END RSA PRIVATE KEY-----").first().kind,
+        )
+    }
+
+    @Test
+    fun `secret detectors do not fire on lookalike non-secrets`() {
+        assertTrue(LeakGuard.scan("prefix AKIA123 short and AKIALOWERcase0000000 nope").isEmpty()) // too short / lowercase
+        assertTrue(LeakGuard.scan("not a jwt: eyJonly.one").isEmpty())
+    }
+
+    @Test
     fun `ordinary prose and code with no PII yields no findings`() {
         val text = """
             fun greet(name: String) = "Hello, ${'$'}name!"

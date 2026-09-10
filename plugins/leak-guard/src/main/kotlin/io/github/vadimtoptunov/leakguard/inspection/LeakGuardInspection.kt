@@ -30,12 +30,17 @@ class LeakGuardInspection : LocalInspectionTool() {
                         finding.range.first - fileStart,
                         finding.range.last + 1 - fileStart,
                     )
+                    val message = if (finding.kind.synthetic) {
+                        "Possible real ${finding.kind.label} — passes its checksum and isn't in a known reserved test range"
+                    } else {
+                        "Possible leaked ${finding.kind.label} — remove it before committing"
+                    }
                     holder.registerProblem(
                         file,
-                        "Possible real ${finding.kind.label} — passes its checksum and isn't in a known reserved test range",
+                        message,
                         ProblemHighlightType.WARNING,
                         rangeInElement,
-                        ReplaceWithSyntheticFix(finding.kind.label, finding.replacement),
+                        ReplaceWithSyntheticFix(finding.kind.label, finding.replacement, finding.kind.synthetic),
                     )
                 }
             }
