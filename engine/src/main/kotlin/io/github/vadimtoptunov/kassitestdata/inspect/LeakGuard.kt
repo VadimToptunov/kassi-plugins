@@ -19,10 +19,18 @@ import io.github.vadimtoptunov.kassitestdata.generators.UsSsnGenerator
  */
 object LeakGuard {
 
-    enum class Kind(val label: String) {
-        CARD_PAN("card number (PAN)"),
-        IBAN("IBAN"),
-        US_SSN("US Social Security Number"),
+    /**
+     * [synthetic] = the finding can be swapped for a checksum-valid synthetic test value from a reserved
+     * range (card/IBAN/SSN). Secrets have no such equivalent — the only safe fix is redaction — so they
+     * are [synthetic] = false and their [Finding.replacement] is a redaction placeholder.
+     */
+    enum class Kind(val label: String, val synthetic: Boolean) {
+        CARD_PAN("card number (PAN)", synthetic = true),
+        IBAN("IBAN", synthetic = true),
+        US_SSN("US Social Security Number", synthetic = true),
+        AWS_ACCESS_KEY("AWS access key ID", synthetic = false),
+        JWT("JWT", synthetic = false),
+        PRIVATE_KEY("private key", synthetic = false),
     }
 
     data class Finding(val kind: Kind, val range: IntRange, val matched: String, val replacement: String)
@@ -34,8 +42,22 @@ object LeakGuard {
 
     private val reservedTestBins: Set<String> = CardGenerator.Network.entries.flatMap { it.testBins }.toSet()
 
+    // Secret patterns — high-precision (a match IS the signal; no checksum/reserved-range applies).
+    // AWS access key ID: AKIA/ASIA + 16 upper-alnum (AWS-documented format).
+    private val AWS_KEY = Regex("""\b(?:AKIA|ASIA)[0-9A-Z]{16}\b""")
+    // JWT: three base64url segments; the header segment starts `eyJ` (base64 of `{"`).
+    private val JWT = Regex("""\beyJ[A-Za-z0-9_-]{5,}\.eyJ[A-Za-z0-9_-]{5,}\.[A-Za-z0-9_-]{5,}\b""")
+    // PEM private-key block header (RSA/EC/OpenSSH/DSA/PGP or bare).
+    private val PRIVATE_KEY = Regex("""-----BEGIN (?:RSA |EC |OPENSSH |DSA |PGP )?PRIVATE KEY-----""")
+
     fun scan(text: String): List<Finding> =
-        (scanIbans(text) + scanPans(text) + scanSsns(text)).sortedBy { it.range.first }
+        (scanIbans(text) + scanPans(text) + scanSsns(text) + scanSecrets(text)).sortedBy { it.range.first }
+
+    private fun scanSecrets(text: String): List<Finding> = buildList {
+        AWS_KEY.findAll(text).forEach { add(Finding(Kind.AWS_ACCESS_KEY, it.range, it.value, "REDACTED_AWS_ACCESS_KEY")) }
+        JWT.findAll(text).forEach { add(Finding(Kind.JWT, it.range, it.value, "REDACTED_JWT")) }
+        PRIVATE_KEY.findAll(text).forEach { add(Finding(Kind.PRIVATE_KEY, it.range, it.value, "REDACTED_PRIVATE_KEY")) }
+    }
 
     private fun scanIbans(text: String): List<Finding> = IBAN_CANDIDATE.findAll(text).mapNotNull { m ->
         val compact = m.value.uppercase()
