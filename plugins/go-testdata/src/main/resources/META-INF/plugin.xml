@@ -1,0 +1,41 @@
+<idea-plugin>
+    <id>io.github.vadimtoptunov.go-testdata</id>
+    <name>Go Test Data</name>
+    <vendor email="vtoptunov88@gmail.com" url="https://github.com/VadimToptunov/kassi-plugins">Vadim Toptunov</vendor>
+
+    <description><![CDATA[
+    <h2>Go Test Data</h2>
+    <p>
+    Generate an idiomatic Go <b>table-driven test</b> whose rows are <b>spec-valid</b> values — and their
+    invalid variants — straight from the Kassi engine. Unlike a hand-rolled faker, every value passes the
+    real checksum, so your <code>_test.go</code> exercises the validator with data that is actually valid
+    (and edge cases that are actually invalid). Fully offline.
+    </p>
+    <ul>
+      <li><b>IBAN</b> — ISO 7064 mod-97 valid, several countries, each with a bad-checksum variant.</li>
+      <li><b>Card (PAN)</b> — Luhn-valid per network, each with a fails-Luhn variant.</li>
+    </ul>
+    <p>Open it from <b>View ▸ Tool Windows ▸ Go Test Data</b>, pick a kind, <b>Generate</b>, then <b>Copy</b>
+    the <code>[]struct{}</code> table test into your package. Platform-only — installs in GoLand and every
+    IntelliJ-based IDE.</p>
+    <p><b>More Kassi tools for QA &amp; fintech:</b>
+    <a href="https://plugins.jetbrains.com/plugin/33149">Kassi Test Data</a>,
+    <a href="https://plugins.jetbrains.com/plugin/33227">Checksum &amp; Regex Playground</a>.</p>
+    <p><b>Source, issues &amp; docs:</b> <a href="https://github.com/VadimToptunov/kassi-plugins">github.com/VadimToptunov/kassi-plugins</a></p>
+    ]]></description>
+
+    <change-notes><![CDATA[
+    <h3>1.0.0</h3>
+    <ul><li>First release: generate Go table-driven tests for IBAN and Card (PAN) validation — valid values and their invalid variants, from the checksummed Kassi engine.</li></ul>
+    ]]></change-notes>
+
+    <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <toolWindow id="Go Test Data"
+                    anchor="right"
+                    secondary="true"
+                    factoryClass="io.github.vadimtoptunov.gotestdata.GoTestDataToolWindowFactory"
+                    icon="/icons/goTestDataToolWindow.svg"/>
+    </extensions>
+</idea-plugin>
