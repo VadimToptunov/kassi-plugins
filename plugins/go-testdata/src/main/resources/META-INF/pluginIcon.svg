@@ -1,0 +1,5 @@
+<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="2" y="2" width="36" height="36" rx="8" fill="#00ADD8"/>
+  <text x="20" y="21" font-family="monospace" font-size="12" font-weight="bold" fill="#FFFFFF" text-anchor="middle">go</text>
+  <text x="20" y="32" font-family="monospace" font-size="10" fill="#E6FBFF" text-anchor="middle">{ }</text>
+</svg>
