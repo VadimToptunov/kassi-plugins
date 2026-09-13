@@ -1,0 +1,42 @@
+<idea-plugin>
+    <id>io.github.vadimtoptunov.pii-anonymizer</id>
+    <name>PII Anonymizer / Repro Sanitizer</name>
+    <vendor email="vtoptunov88@gmail.com" url="https://github.com/VadimToptunov/kassi-plugins">Vadim Toptunov</vendor>
+
+    <description><![CDATA[
+    <h2>PII Anonymizer / Repro Sanitizer</h2>
+    <p>
+    Need to attach a log, JSON or CSV to a bug report but it contains real PII? Select the text (or the
+    whole file) and run <b>Anonymize PII</b> — every card number, IBAN, US SSN and email is replaced with a
+    <b>valid-synthetic</b> equivalent. Not asterisks: the replacements pass the real checksum (card Luhn,
+    IBAN mod-97), so the repro stays reproducible and the data stays coherent (the same value always maps to
+    the same replacement). 100% offline.
+    </p>
+    <ul>
+      <li><b>Card (PAN)</b> — Luhn-valid → a synthetic test-BIN card.</li>
+      <li><b>IBAN</b> — ISO 7064 mod-97 valid → a synthetic valid IBAN in the same country.</li>
+      <li><b>US SSN</b> → a synthetic never-issued test SSN.</li>
+      <li><b>Email</b> → <code>user…@example.com</code> (RFC 2606 reserved).</li>
+    </ul>
+    <p><b>Usage:</b> right-click in the editor → <b>Anonymize PII (Kassi)</b>, on a selection or the whole
+    file. Platform-only — installs in every IntelliJ-based IDE. A companion to
+    <a href="https://plugins.jetbrains.com/plugin/33149">Kassi Test Data</a> and the Secret &amp; Card Leak Guard.</p>
+    <p><b>Source, issues &amp; docs:</b> <a href="https://github.com/VadimToptunov/kassi-plugins">github.com/VadimToptunov/kassi-plugins</a></p>
+    ]]></description>
+
+    <change-notes><![CDATA[
+    <h3>1.0.0</h3>
+    <ul><li>First release: an editor action that replaces card / IBAN / US SSN / email PII with valid-synthetic, checksum-passing, coherent replacements — on a selection or the whole file.</li></ul>
+    ]]></change-notes>
+
+    <depends>com.intellij.modules.platform</depends>
+
+    <actions>
+        <action id="kassi.AnonymizePii"
+                class="io.github.vadimtoptunov.piianonymizer.AnonymizePiiAction"
+                text="Anonymize PII (Kassi)"
+                description="Replace card / IBAN / SSN / email PII in this file with valid-synthetic equivalents">
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+        </action>
+    </actions>
+</idea-plugin>
