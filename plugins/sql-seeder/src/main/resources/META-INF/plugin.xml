@@ -1,0 +1,42 @@
+<idea-plugin>
+    <id>io.github.vadimtoptunov.sql-seeder</id>
+    <name>SQL Synthetic Seeder</name>
+    <vendor email="vtoptunov88@gmail.com" url="https://github.com/VadimToptunov/kassi-plugins">Vadim Toptunov</vendor>
+
+    <description><![CDATA[
+    <h2>SQL Synthetic Seeder</h2>
+    <p>
+    Fill a table with plausible-but-<b>validation-passing</b> rows for manual or load testing. Enter the
+    table name and its columns, pick a row count, and get <code>INSERT</code> statements where each row is
+    one <b>coherent synthetic persona</b> and each column is mapped to a value by its name. Unlike a random
+    faker, the IBANs pass ISO 7064 mod-97 and the cards pass Luhn. 100% offline.
+    </p>
+    <ul>
+      <li><b>Name-mapped columns:</b> <code>iban</code>, <code>card</code>/<code>pan</code>, <code>email</code>,
+      <code>bic</code>, <code>vat</code>/<code>tax</code>, <code>name</code>, <code>dob</code>/<code>date</code>,
+      <code>address</code>, <code>amount</code>, <code>id</code> — anything else gets a stable placeholder.</li>
+      <li><b>Coherent rows:</b> one persona per row, so the IBAN, BIC, name and tax id belong together.</li>
+    </ul>
+    <p>Open it from <b>View ▸ Tool Windows ▸ SQL Seeder</b>, then <b>Generate</b> and <b>Copy</b> the INSERTs.
+    Platform-only — installs in DataGrip and every IntelliJ-based IDE.</p>
+    <p><b>More Kassi tools for QA &amp; fintech:</b>
+    <a href="https://plugins.jetbrains.com/plugin/33149">Kassi Test Data</a>,
+    <a href="https://plugins.jetbrains.com/plugin/33227">Checksum &amp; Regex Playground</a>.</p>
+    <p><b>Source, issues &amp; docs:</b> <a href="https://github.com/VadimToptunov/kassi-plugins">github.com/VadimToptunov/kassi-plugins</a></p>
+    ]]></description>
+
+    <change-notes><![CDATA[
+    <h3>1.0.0</h3>
+    <ul><li>First release: generate INSERT statements of N coherent, checksum-valid rows — columns mapped to synthetic-persona fields by name.</li></ul>
+    ]]></change-notes>
+
+    <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <toolWindow id="SQL Seeder"
+                    anchor="right"
+                    secondary="true"
+                    factoryClass="io.github.vadimtoptunov.sqlseeder.SqlSeederToolWindowFactory"
+                    icon="/icons/sqlSeederToolWindow.svg"/>
+    </extensions>
+</idea-plugin>
