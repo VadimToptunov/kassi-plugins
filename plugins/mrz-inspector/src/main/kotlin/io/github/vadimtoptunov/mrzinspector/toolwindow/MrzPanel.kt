@@ -3,9 +3,12 @@ package io.github.vadimtoptunov.mrzinspector.toolwindow
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextArea
+import com.intellij.ui.components.JBTextField
 import com.intellij.util.ui.JBUI
+import io.github.vadimtoptunov.kassitestdata.inspect.IcaoTransliteration
 import io.github.vadimtoptunov.kassitestdata.inspect.MrzInspector
 import java.awt.BorderLayout
+import javax.swing.BoxLayout
 import javax.swing.JPanel
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
@@ -19,6 +22,8 @@ class MrzPanel : JPanel(BorderLayout()) {
 
     private val input = JBTextArea(3, 44)
     private val output = JBTextArea().apply { isEditable = false }
+    private val nameInput = JBTextField()
+    private val translitOutput = JBTextField().apply { isEditable = false }
 
     init {
         border = JBUI.Borders.empty(8)
@@ -30,14 +35,33 @@ class MrzPanel : JPanel(BorderLayout()) {
         }
         add(top, BorderLayout.NORTH)
         add(JBScrollPane(output), BorderLayout.CENTER)
+        add(buildTransliterationPanel(), BorderLayout.SOUTH)
 
         input.document.addDocumentListener(object : DocumentListener {
             override fun insertUpdate(e: DocumentEvent) = refresh()
             override fun removeUpdate(e: DocumentEvent) = refresh()
             override fun changedUpdate(e: DocumentEvent) = refresh()
         })
+        nameInput.document.addDocumentListener(object : DocumentListener {
+            override fun insertUpdate(e: DocumentEvent) = refreshTransliteration()
+            override fun removeUpdate(e: DocumentEvent) = refreshTransliteration()
+            override fun changedUpdate(e: DocumentEvent) = refreshTransliteration()
+        })
 
         refresh()
+        refreshTransliteration()
+    }
+
+    private fun buildTransliterationPanel(): JPanel = JPanel().apply {
+        layout = BoxLayout(this, BoxLayout.Y_AXIS)
+        border = JBUI.Borders.emptyTop(8)
+        add(JBLabel("Name → ICAO 9303 MRZ transliteration (e.g. Müller → MUELLER):"))
+        add(nameInput)
+        add(translitOutput)
+    }
+
+    private fun refreshTransliteration() {
+        translitOutput.text = IcaoTransliteration.transliterate(nameInput.text)
     }
 
     private fun refresh() {
