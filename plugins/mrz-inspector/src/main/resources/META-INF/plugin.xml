@@ -21,6 +21,9 @@
       <li><b>Barcode tab</b> — paste the decoded text payload of an AAMVA-compliant PDF417 barcode
       (US/Canada driver's license or ID card): header (IIN, AAMVA/jurisdiction version) and every
       subfile's data elements, or a precise structural error if the payload is malformed.</li>
+      <li><b>ICAO 9303 name transliteration</b> — type a name with national characters and get its
+      Machine Readable Zone form (<code>Müller</code> → <code>MUELLER</code>, <code>Åström</code> →
+      <code>AASTROEM</code>), the Latin-based transliteration from ICAO Doc 9303 Part 3.</li>
     </ul>
     <p>100% offline and algorithmic. Zero network calls, zero data collection.</p>
     <p><b>More Kassi tools for QA &amp; fintech:</b>
@@ -31,6 +34,7 @@
     ]]></description>
 
     <change-notes><![CDATA[
+    <h3>1.5.0</h3><ul><li>ICAO 9303 name transliteration: type a name with national characters (e.g. <code>Müller</code>, <code>Åström</code>, <code>Peña</code>) and get its Machine Readable Zone form (<code>MUELLER</code>, <code>AASTROEM</code>, <code>PENA</code>) — the Latin-based transliteration used to render a name into the MRZ, per ICAO Doc 9303 Part 3.</li></ul>
     <h3>1.4.0</h3><ul><li>The tool window now shows a distinct stripe icon.</li></ul>
     <h3>1.3.0</h3>
     <ul>
