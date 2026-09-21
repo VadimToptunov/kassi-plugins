@@ -1,8 +1,10 @@
 package io.github.vadimtoptunov.uuidtoolkit
 
+import com.intellij.openapi.ide.CopyPasteManager
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.ui.DocumentAdapter
 import com.intellij.ui.JBColor
+import com.intellij.ui.SimpleListCellRenderer
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextArea
@@ -10,13 +12,17 @@ import com.intellij.ui.components.JBTextField
 import com.intellij.util.ui.JBUI
 import io.github.vadimtoptunov.kassitestdata.core.Rng
 import io.github.vadimtoptunov.kassitestdata.generators.IdToolkit
+import io.github.vadimtoptunov.kassitestdata.generators.UuidFormat
 import java.awt.BorderLayout
 import java.awt.FlowLayout
+import java.awt.datatransfer.StringSelection
 import java.time.Instant
 import javax.swing.BoxLayout
 import javax.swing.JButton
 import javax.swing.JComponent
 import javax.swing.JPanel
+import javax.swing.JSpinner
+import javax.swing.SpinnerNumberModel
 import javax.swing.event.DocumentEvent
 
 /** Generate and inspect UUID (v4/v7), ULID and NanoID — offline, using the shared engine. */
@@ -26,6 +32,12 @@ class UuidToolkitPanel : JPanel(BorderLayout()) {
     private val output = JBTextArea(8, 40).apply { isEditable = false }
     private val inspectInput = JBTextField()
     private val inspectResult = JBLabel(" ")
+
+    // Bulk generation: how many to emit per click, and how to format UUID output.
+    private val countSpinner = JSpinner(SpinnerNumberModel(1, 1, 1000, 1))
+    private val formatCombo = ComboBox(UuidFormat.Style.entries.toTypedArray()).apply {
+        renderer = SimpleListCellRenderer.create("") { it.label }
+    }
 
     private val okColor = JBColor(0x2E7D32, 0x66BB6A)
     private val failColor = JBColor(0xC62828, 0xEF5350)
@@ -39,12 +51,21 @@ class UuidToolkitPanel : JPanel(BorderLayout()) {
         border = JBUI.Borders.empty(8)
 
         val buttons = JPanel(FlowLayout(FlowLayout.LEFT, 6, 0)).apply {
-            add(genButton("UUID v1") { IdToolkit.uuidV1(rng, System.currentTimeMillis()) })
-            add(genButton("UUID v4") { IdToolkit.uuidV4(rng) })
-            add(genButton("UUID v6") { IdToolkit.uuidV6(rng, System.currentTimeMillis()) })
-            add(genButton("UUID v7") { IdToolkit.uuidV7(rng, System.currentTimeMillis()) })
-            add(genButton("ULID") { IdToolkit.ulid(rng, System.currentTimeMillis()) })
-            add(genButton("NanoID") { IdToolkit.nanoId(rng) })
+            add(uuidButton("UUID v1") { IdToolkit.uuidV1(rng, System.currentTimeMillis()) })
+            add(uuidButton("UUID v4") { IdToolkit.uuidV4(rng) })
+            add(uuidButton("UUID v6") { IdToolkit.uuidV6(rng, System.currentTimeMillis()) })
+            add(uuidButton("UUID v7") { IdToolkit.uuidV7(rng, System.currentTimeMillis()) })
+            add(plainButton("ULID") { IdToolkit.ulid(rng, System.currentTimeMillis()) })
+            add(plainButton("NanoID") { IdToolkit.nanoId(rng) })
+        }
+
+        // Bulk count + UUID format, and output actions.
+        val bulkRow = JPanel(FlowLayout(FlowLayout.LEFT, 6, 0)).apply {
+            add(JBLabel("Count:"))
+            add(countSpinner)
+            add(JBLabel("UUID format:"))
+            add(formatCombo)
+            add(JButton("Copy all").apply { addActionListener { copyAll() } })
             add(JButton("Clear").apply { addActionListener { output.text = "" } })
         }
 
@@ -75,6 +96,7 @@ class UuidToolkitPanel : JPanel(BorderLayout()) {
         val controls = JPanel().apply {
             layout = BoxLayout(this, BoxLayout.Y_AXIS)
             add(buttons)
+            add(bulkRow)
             add(nsRow)
             add(typeIdRow)
         }
@@ -99,8 +121,27 @@ class UuidToolkitPanel : JPanel(BorderLayout()) {
         inspect()
     }
 
-    private fun genButton(label: String, produce: () -> String): JButton =
-        JButton(label).apply { addActionListener { output.append(produce() + "\n") } }
+    /** A UUID generator button: emits [count] values, each rendered in the selected [UuidFormat.Style]. */
+    private fun uuidButton(label: String, produce: () -> String): JButton =
+        JButton(label).apply {
+            addActionListener {
+                val style = formatCombo.item
+                repeat(count()) { output.append(UuidFormat.format(produce(), style) + "\n") }
+            }
+        }
+
+    /** A non-UUID generator button (ULID/NanoID): emits [count] values verbatim (no UUID format). */
+    private fun plainButton(label: String, produce: () -> String): JButton =
+        JButton(label).apply {
+            addActionListener { repeat(count()) { output.append(produce() + "\n") } }
+        }
+
+    private fun count(): Int = countSpinner.value as Int
+
+    private fun copyAll() {
+        val text = output.text
+        if (text.isNotEmpty()) CopyPasteManager.getInstance().setContents(StringSelection(text))
+    }
 
     private fun labeled(title: String, component: JComponent): JPanel =
         JPanel(BorderLayout(0, 2)).apply {
