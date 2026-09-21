@@ -23,6 +23,9 @@
     Financial/PII findings offer a one-click <b>replace with a synthetic, checksum-valid equivalent</b>
     from a reserved test range (so re-scanning never re-flags the fix); secrets offer a <b>redact</b> fix.
     </p>
+    <p><b>CI mode:</b> a headless runner scans your files outside the IDE and writes a <b>SARIF 2.1.0</b>
+    report with a line-independent <b>baseline</b> (only new findings fail), so the same check can gate a
+    commit or pull request. The matched secret is never written to the report.</p>
     <p>100% offline and algorithmic. Zero network calls, zero data collection, nothing ever leaves your IDE.</p>
     <p><b>More Kassi tools for QA &amp; fintech:</b>
     <a href="https://plugins.jetbrains.com/plugin/33149">Kassi Test Data</a> — generate valid IBANs, cards,
@@ -32,6 +35,7 @@
     ]]></description>
 
     <change-notes><![CDATA[
+    <h3>1.2.0</h3><ul><li>CI mode: a headless runner (<code>./gradlew :plugins:leak-guard:runCli --args="&lt;dir&gt;"</code>) scans files outside the IDE and writes a <b>SARIF 2.1.0</b> report, so the same check can gate a commit or PR. A line-independent <b>baseline</b> (only NEW findings fail) lets it go onto an existing repo without a wall of red; the matched secret is never written to the report.</li></ul>
     <h3>1.1.0</h3><ul><li>More detectors: <b>AWS access key ID</b>, <b>JWT</b>, and <b>PEM private-key</b> blocks — high-precision secret patterns, each with a one-click <b>redact</b> fix.</li></ul>
     <h3>1.0.0</h3>
     <ul>

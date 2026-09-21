@@ -7,7 +7,7 @@ plugins {
 }
 
 // Overridable at release time: -PleakGuardVersion=1.0.1
-version = (findProperty("pluginVersion") as String?) ?: "1.1.0"
+version = (findProperty("pluginVersion") as String?) ?: "1.2.0"
 
 intellij {
     version.set("2023.2.6")
@@ -28,6 +28,16 @@ tasks {
     withType<JavaCompile> {
         sourceCompatibility = "17"
         targetCompatibility = "17"
+    }
+
+    // Headless CLI / CI entry point: scans files for real-looking secrets and card/IBAN/SSN values
+    // without an IDE, with SARIF output and a line-independent baseline (fail only on NEW findings).
+    //   ./gradlew :plugins:leak-guard:runCli --args="--sarif leaks.sarif --baseline lg-baseline.json src"
+    register<JavaExec>("runCli") {
+        group = "application"
+        description = "Runs Leak Guard on files/dirs without IntelliJ (SARIF + baseline)."
+        mainClass.set("io.github.vadimtoptunov.leakguard.cli.CliKt")
+        classpath = sourceSets["main"].runtimeClasspath
     }
 
     patchPluginXml {
