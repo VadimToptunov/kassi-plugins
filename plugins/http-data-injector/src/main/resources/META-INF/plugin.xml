@@ -32,6 +32,8 @@
     ]]></description>
 
     <change-notes><![CDATA[
+    <h3>1.1.1</h3>
+    <ul><li>Compatibility: the data-type popup no longer uses a list-cell-renderer factory scheduled for removal on the 2026.x IDE platform. No behavior change.</li></ul>
     <h3>1.1.0</h3>
     <ul><li>More data types: <b>National ID</b> (NL/DE/AU/GB/CY) and <b>VAT / Tax ID</b> (CY/DE/NL/GB VAT, AU ABN) — each checksum-valid with an invalid variant for negative tests.</li></ul>
     <h3>1.0.1</h3>
