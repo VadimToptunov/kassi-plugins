@@ -9,6 +9,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.SimpleListCellRenderer
 import io.github.vadimtoptunov.kassitestdata.generators.CatalogItem
 import io.github.vadimtoptunov.kassitestdata.generators.HttpBodyDataCatalog
+import javax.swing.JList
 
 /**
  * Shared popup + insertion logic behind both entry points (editor action and intention). Kept
@@ -25,7 +26,11 @@ object HttpDataInjector {
             .createPopupChooserBuilder(items)
             .setTitle("Insert HTTP Test Data")
             .setNamerForFiltering { it.searchText }
-            .setRenderer(SimpleListCellRenderer.create<CatalogItem> { label, value, _ -> label.text = value.label })
+            .setRenderer(object : SimpleListCellRenderer<CatalogItem>() {
+                override fun customize(list: JList<out CatalogItem>, value: CatalogItem?, index: Int, selected: Boolean, hasFocus: Boolean) {
+                    text = value?.label ?: ""
+                }
+            })
             .setItemChosenCallback { item ->
                 WriteCommandAction.runWriteCommandAction(project) {
                     insertAtCaret(editor, item.produce(null))

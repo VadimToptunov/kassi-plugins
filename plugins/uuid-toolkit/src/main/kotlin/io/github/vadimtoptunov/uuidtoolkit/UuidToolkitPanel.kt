@@ -20,6 +20,7 @@ import java.time.Instant
 import javax.swing.BoxLayout
 import javax.swing.JButton
 import javax.swing.JComponent
+import javax.swing.JList
 import javax.swing.JPanel
 import javax.swing.JSpinner
 import javax.swing.SpinnerNumberModel
@@ -36,7 +37,11 @@ class UuidToolkitPanel : JPanel(BorderLayout()) {
     // Bulk generation: how many to emit per click, and how to format UUID output.
     private val countSpinner = JSpinner(SpinnerNumberModel(1, 1, 1000, 1))
     private val formatCombo = ComboBox(UuidFormat.Style.entries.toTypedArray()).apply {
-        renderer = SimpleListCellRenderer.create("") { it.label }
+        renderer = object : SimpleListCellRenderer<UuidFormat.Style>() {
+            override fun customize(list: JList<out UuidFormat.Style>, value: UuidFormat.Style?, index: Int, selected: Boolean, hasFocus: Boolean) {
+                text = value?.label ?: ""
+            }
+        }
     }
 
     private val okColor = JBColor(0x2E7D32, 0x66BB6A)
