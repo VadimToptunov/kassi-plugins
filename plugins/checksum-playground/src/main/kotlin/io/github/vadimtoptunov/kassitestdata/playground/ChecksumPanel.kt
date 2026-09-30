@@ -113,6 +113,7 @@ class ChecksumPanel : JPanel(BorderLayout()) {
             "FR SIREN" to "732829320",
             "FR SIRET" to "73282932000074",
             "UK NHS number" to "9434765919",
+            "Routing number (ABA)" to "021000021",
         )
     }
 }

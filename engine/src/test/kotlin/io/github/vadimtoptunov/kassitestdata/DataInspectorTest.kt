@@ -30,6 +30,15 @@ class DataInspectorTest {
     }
 
     @Test
+    fun `validates a US ABA routing number against published routing numbers`() {
+        // External anchor: real published Federal Reserve routing numbers (Chase, FRB Boston, Wells Fargo).
+        assertTrue(passed("021000021", "ABA routing"))
+        assertTrue(passed("011000015", "ABA routing"))
+        assertTrue(passed("121000248", "ABA routing"))
+        assertFalse(passed("021000022", "ABA routing")) // check digit off by one
+    }
+
+    @Test
     fun `validates ABN and VAT with country prefix`() {
         assertTrue(passed("51824753556", "ABN"))
         assertTrue(passed("DE136695976", "DE VAT"))
