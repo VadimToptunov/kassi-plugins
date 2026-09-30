@@ -1,0 +1,44 @@
+<idea-plugin>
+    <id>io.github.vadimtoptunov.nacha-toolkit</id>
+    <name>ACH / NACHA Toolkit</name>
+    <vendor email="vtoptunov88@gmail.com" url="https://github.com/VadimToptunov/kassi-plugins">Vadim Toptunov</vendor>
+
+    <description><![CDATA[
+    <h2>ACH / NACHA Toolkit — validate and generate US ACH files in the IDE</h2>
+    <p>
+    Payments engineers hand-craft and debug fixed-width <b>NACHA ACH</b> files (94-character records,
+    batch and file control totals, entry hash) and today paste them into random websites or eyeball
+    them by hand — exactly the data that should never leave your machine. This tool window does it
+    <b>offline</b>: no browser, no upload, no telemetry.
+    </p>
+    <ul>
+      <li><b>Validate</b> — paste or open an ACH file and get a precise problem list: wrong record
+      length, bad <b>ABA routing check digit</b> on an entry, and mismatched <b>entry hash</b>,
+      <b>total debit / credit</b>, <b>entry count</b> or <b>block count</b> in the batch/file control.</li>
+      <li><b>Generate</b> — produce a spec-valid single-batch <b>PPD</b> sample file (correct control
+      totals and entry hash) and a deliberately <b>invalid</b> variant for negative tests, then copy it.</li>
+      <li><b>Routing numbers</b> — the ABA routing-transit check digit (weights 3-7-1, mod 10) is the
+      same check real Federal Reserve routing numbers pass; generate valid ones or verify your own.</li>
+    </ul>
+    <p>Open it from <b>View ▸ Tool Windows ▸ ACH / NACHA</b>. Fully offline and deterministic — the same
+    validated engine behind the Kassi fintech tools.</p>
+    <p><b>More Kassi tools for QA &amp; fintech:</b>
+    <a href="https://plugins.jetbrains.com/plugin/33149">Kassi Test Data</a> — generate valid IBANs,
+    cards, BIC/SWIFT, VAT and national IDs.</p>
+    <p><b>Source, issues &amp; docs:</b> <a href="https://github.com/VadimToptunov/kassi-plugins">github.com/VadimToptunov/kassi-plugins</a></p>
+    ]]></description>
+
+    <change-notes><![CDATA[
+    <h3>1.0.0</h3><ul><li>Initial release: a tool window to <b>validate</b> a NACHA ACH file (record length, ABA routing check digits, entry hash, batch/file control totals, block count) and to <b>generate</b> a spec-valid PPD sample file plus a deliberately-invalid variant. Offline and deterministic.</li></ul>
+    ]]></change-notes>
+
+    <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <toolWindow id="ACH / NACHA"
+                    anchor="right"
+                    secondary="true"
+                    factoryClass="io.github.vadimtoptunov.nachatoolkit.NachaToolkitToolWindowFactory"
+                    icon="/icons/nachaToolWindow.svg"/>
+    </extensions>
+</idea-plugin>
