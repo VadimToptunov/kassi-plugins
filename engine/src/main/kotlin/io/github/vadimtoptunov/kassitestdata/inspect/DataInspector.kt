@@ -5,6 +5,7 @@ import io.github.vadimtoptunov.kassitestdata.algo.CryptoChecksums
 import io.github.vadimtoptunov.kassitestdata.algo.RuIdChecksums
 import io.github.vadimtoptunov.kassitestdata.generators.BicGenerator
 import io.github.vadimtoptunov.kassitestdata.generators.NationalIdGenerator
+import io.github.vadimtoptunov.kassitestdata.nacha.Nacha
 
 /** One check applied to an input value. [passed] is the algorithm's verdict. */
 data class CheckResult(val name: String, val passed: Boolean)
@@ -51,6 +52,7 @@ object DataInspector {
             results["UK VAT — modulo-97"] = Checksums.isValidUkVat(compact)
             results["NO VAT (MVA/orgnr) — mod-11"] = Checksums.isValidNorwegianVat(compact)
             results["FR SIREN — Luhn"] = Checksums.isValidSiren(compact)
+            results["ABA routing — US bank (weighted mod-10)"] = Nacha.isValidRoutingNumber(compact)
         }
 
         // GTIN-8 / EAN-8.
