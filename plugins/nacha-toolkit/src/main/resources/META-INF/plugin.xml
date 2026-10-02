@@ -29,6 +29,7 @@
     ]]></description>
 
     <change-notes><![CDATA[
+    <h3>1.1.0</h3><ul><li><b>Addenda records (type 7)</b>: generated sample files now carry a payment-related addenda (type code 05) on an entry — with the entry's addenda indicator set and the batch/file entry+addenda counts updated — and validation recognises type-7 records, checks their addenda type code, and includes them in the control-total count.</li></ul>
     <h3>1.0.0</h3><ul><li>Initial release: a tool window to <b>validate</b> a NACHA ACH file (record length, ABA routing check digits, entry hash, batch/file control totals, block count) and to <b>generate</b> a spec-valid PPD sample file plus a deliberately-invalid variant. Offline and deterministic.</li></ul>
     ]]></change-notes>
 
