@@ -62,4 +62,42 @@ class NachaTest {
         val problems = Nacha.validate(lines.joinToString("\n"))
         assertTrue(problems.any { it.message.contains("ABA check digit") }, "expected a routing problem, got $problems")
     }
+
+    @Test
+    fun `an entry with an addenda produces a type-7 record and counts it in the control totals`() {
+        val file = Nacha.generateFile(
+            entries = listOf(
+                Nacha.Entry("22", "021000021", "12345678", 100_00, "ALICE", addenda = "INV 7 PAYMENT"),
+                Nacha.Entry("22", "011000015", "98765432", 200_00, "BOB"),
+            ),
+            originRouting = "121000248",
+        )
+        val lines = file.split("\n")
+        val addenda = lines.filter { it[0] == '7' }
+        assertEquals(1, addenda.size, "one addenda record")
+        assertEquals("05", addenda.first().substring(1, 3), "payment-related addenda type code")
+        // The entry carrying the addenda has its addenda-record indicator (position 79, 0-based 78) = '1'.
+        assertEquals('1', lines.first { it[0] == '6' }[78])
+        // Entry/addenda count in the File Control (positions 14-21) counts 2 entries + 1 addenda = 3.
+        val fileControl = lines.last { it[0] == '9' && it.substring(0, 2) != "99" }
+        assertEquals(3L, fileControl.substring(13, 21).toLong())
+        assertTrue(Nacha.validate(file).isEmpty(), "addenda file is valid: ${Nacha.validate(file)}")
+    }
+
+    @Test
+    fun `the seeded sample file includes a type-7 addenda and still validates`() {
+        val file = Nacha.sampleFile(Rng(3L), valid = true)
+        assertTrue(file.split("\n").any { it.startsWith("705") }, "sample has a payment-related addenda")
+        assertTrue(Nacha.validate(file).isEmpty())
+    }
+
+    @Test
+    fun `an unrecognised addenda type code is flagged`() {
+        val file = Nacha.sampleFile(Rng(3L), valid = true)
+        val lines = file.split("\n").toMutableList()
+        val addendaIdx = lines.indexOfFirst { it[0] == '7' }
+        lines[addendaIdx] = "7" + "07" + lines[addendaIdx].substring(3) // 07 is not a valid addenda type code
+        val problems = Nacha.validate(lines.joinToString("\n"))
+        assertTrue(problems.any { it.message.contains("Addenda type code") }, "expected an addenda problem, got $problems")
+    }
 }

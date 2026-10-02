@@ -53,11 +53,17 @@ object Nacha {
         val amountCents: Long,
         val individualName: String,
         val individualId: String = "",
+        /** Optional payment-related information; when set, a type-7 addenda (type code 05) follows the entry. */
+        val addenda: String? = null,
     ) {
         val isDebit: Boolean get() = transactionCode.endsWith("7")
     }
 
     private const val W = 94
+
+    // Recognised NACHA addenda type codes: 02 (POS/MTE/SHR), 05 (payment related, PPD/CCD/CTX),
+    // 98 (notification of change), 99 (return).
+    private val ADDENDA_TYPE_CODES = setOf("02", "05", "98", "99")
 
     // ---- Generation ----------------------------------------------------------------------------
 
@@ -80,13 +86,19 @@ object Nacha {
         val hash = entryHash(entries.map { it.routingNumber })
         val serviceClass = serviceClassFor(entries)
 
+        // The entry/addenda count in the batch and file control records counts type-6 AND type-7 records.
+        val entryAddendaCount = entries.size + entries.count { it.addenda != null }
+
         val lines = ArrayList<String>()
         lines += fileHeader(originRouting)
         lines += batchHeader(serviceClass, companyName, companyId, originDfi)
-        entries.forEachIndexed { i, e -> lines += entryDetail(e, originDfi, i + 1L) }
-        lines += batchControl(serviceClass, entries.size, hash, debitCents, creditCents, companyId, originDfi)
+        entries.forEachIndexed { i, e ->
+            lines += entryDetail(e, originDfi, i + 1L)
+            if (e.addenda != null) lines += addendaRecord(e.addenda, i + 1L)
+        }
+        lines += batchControl(serviceClass, entryAddendaCount, hash, debitCents, creditCents, companyId, originDfi)
         val declaredCredit = if (valid) creditCents else creditCents + 1
-        lines += fileControl(batchCount = 1, entryCount = entries.size, hash = hash,
+        lines += fileControl(batchCount = 1, entryCount = entryAddendaCount, hash = hash,
             debitCents = debitCents, creditCents = declaredCredit, dataRecords = lines.size + 1)
         // Block to a multiple of 10 with all-9 filler rows.
         while (lines.size % 10 != 0) lines += "9".repeat(W)
@@ -96,7 +108,8 @@ object Nacha {
     /** A ready-made sample file (seeded) using real published routing numbers, for the "insert sample" action. */
     fun sampleFile(rng: Rng, valid: Boolean = true): String {
         val entries = listOf(
-            Entry("22", "021000021", "12345678", 125_00, "ALICE EXAMPLE"),   // JPMorgan Chase
+            // The first entry carries a type-7 addenda (payment-related information).
+            Entry("22", "021000021", "12345678", 125_00, "ALICE EXAMPLE", addenda = "INV 10042 PAYMENT"), // JPMorgan Chase
             Entry("22", "011000015", "98765432", 4_200_00, "BOB EXAMPLE"),    // FRB Boston
             Entry("27", "121000248", "55554444", 50_00, "CAROL EXAMPLE"),     // Wells Fargo (debit)
         )
@@ -162,8 +175,21 @@ object Nacha {
         append(fit(e.individualId, 15))
         append(fit(e.individualName, 22))
         append(fit("", 2))                       // discretionary data
-        append('0')                              // addenda record indicator
+        append(if (e.addenda != null) '1' else '0') // addenda record indicator
         append(originDfi).append(numStr(sequence, 7)) // trace number (15)
+    }
+
+    /**
+     * A type-7 addenda record (addenda type code 05 — payment-related information). Carries the free-text
+     * [info], an addenda sequence number (0001, one addenda per entry here), and the entry-detail
+     * sequence number — the last 7 digits of the parent entry's trace number.
+     */
+    private fun addendaRecord(info: String, entryDetailSequence: Long): String = buildString {
+        append('7')
+        append("05")                             // addenda type code (payment related)
+        append(fit(info, 80))
+        append(numStr(1, 4))                     // addenda sequence number
+        append(numStr(entryDetailSequence, 7))   // entry detail sequence number
     }
 
     private fun batchControl(
@@ -245,12 +271,23 @@ object Nacha {
         }
         val hash = entryHash(routings)
 
+        // Addenda records (type 7): each must carry a recognised addenda type code; the entry/addenda
+        // count in the controls counts them alongside the type-6 entries.
+        val addendaLines = lines.withIndex().filter { it.value[0] == '7' }
+        for ((idx, line) in addendaLines) {
+            val addendaType = line.substring(1, 3)
+            if (addendaType !in ADDENDA_TYPE_CODES) {
+                problems += Problem(idx + 1, "Addenda type code '$addendaType' is not a recognised NACHA code.")
+            }
+        }
+        val entryAddendaCount = (entryLines.size + addendaLines.size).toLong()
+
         // File Control (type 9, not a 99.. filler): positions per the Nacha spec.
         fileControl?.let { fc ->
             val fcLine = lines.indexOf(fc) + 1
             val declaredEntries = fc.substring(13, 21).toLongOrNull()
-            if (declaredEntries != null && declaredEntries != entryLines.size.toLong()) {
-                problems += Problem(fcLine, "File Control entry/addenda count $declaredEntries != actual ${entryLines.size}.")
+            if (declaredEntries != null && declaredEntries != entryAddendaCount) {
+                problems += Problem(fcLine, "File Control entry/addenda count $declaredEntries != actual $entryAddendaCount.")
             }
             val declaredHash = fc.substring(21, 31).toLongOrNull()
             if (declaredHash != null && declaredHash != hash) {
