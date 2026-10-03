@@ -5,6 +5,7 @@ import io.github.vadimtoptunov.kassitestdata.core.Country
 import io.github.vadimtoptunov.kassitestdata.generators.BicGenerator
 import io.github.vadimtoptunov.kassitestdata.generators.HttpBodyDataCatalog
 import io.github.vadimtoptunov.kassitestdata.generators.NationalIdGenerator
+import io.github.vadimtoptunov.kassitestdata.nacha.Nacha
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -12,7 +13,7 @@ import org.junit.jupiter.api.Test
 
 class HttpBodyDataCatalogTest {
 
-    private val allowedGroups = setOf("IBAN", "Card", "BIC", "National ID", "VAT / Tax ID", "Persona")
+    private val allowedGroups = setOf("IBAN", "Card", "BIC", "National ID", "VAT / Tax ID", "Persona", "Routing number")
 
     private fun jsonField(json: String, key: String): String {
         val match = Regex("\"$key\":\\s*\"([^\"]*)\"").find(json)
@@ -86,6 +87,20 @@ class HttpBodyDataCatalogTest {
                 assertFalse(NationalIdGenerator.isValid(country, value), "expected invalid: ${item.label} -> $value")
             } else {
                 assertTrue(NationalIdGenerator.isValid(country, value), "expected valid: ${item.label} -> $value")
+            }
+        }
+    }
+
+    @Test
+    fun `Routing number items pass or fail the ABA check exactly as labelled`() {
+        val items = HttpBodyDataCatalog.items().filter { it.group == "Routing number" }
+        assertTrue(items.isNotEmpty(), "expected Routing number items")
+        for (item in items) {
+            val routing = item.produce(1L)
+            if ("invalid" in item.label) {
+                assertFalse(Nacha.isValidRoutingNumber(routing), "expected invalid: ${item.label} -> $routing")
+            } else {
+                assertTrue(Nacha.isValidRoutingNumber(routing), "expected valid: ${item.label} -> $routing")
             }
         }
     }

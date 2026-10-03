@@ -32,6 +32,8 @@
     ]]></description>
 
     <change-notes><![CDATA[
+    <h3>1.2.0</h3>
+    <ul><li>New data type: <b>US routing number (ABA)</b> — a 9-digit routing transit number with a correct weighted mod-10 check digit (and an invalid variant for negative tests), insertable straight into a <code>.http</code> request.</li></ul>
     <h3>1.1.1</h3>
     <ul><li>Compatibility: the data-type popup no longer uses a list-cell-renderer factory scheduled for removal on the 2026.x IDE platform. No behavior change.</li></ul>
     <h3>1.1.0</h3>
