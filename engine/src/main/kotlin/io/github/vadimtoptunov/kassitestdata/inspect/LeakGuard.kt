@@ -31,6 +31,9 @@ object LeakGuard {
         AWS_ACCESS_KEY("AWS access key ID", synthetic = false),
         JWT("JWT", synthetic = false),
         PRIVATE_KEY("private key", synthetic = false),
+        GITHUB_TOKEN("GitHub token", synthetic = false),
+        STRIPE_SECRET_KEY("Stripe live secret key", synthetic = false),
+        GOOGLE_API_KEY("Google API key", synthetic = false),
     }
 
     data class Finding(val kind: Kind, val range: IntRange, val matched: String, val replacement: String)
@@ -49,6 +52,12 @@ object LeakGuard {
     private val JWT = Regex("""\beyJ[A-Za-z0-9_-]{5,}\.eyJ[A-Za-z0-9_-]{5,}\.[A-Za-z0-9_-]{5,}\b""")
     // PEM private-key block header (RSA/EC/OpenSSH/DSA/PGP or bare).
     private val PRIVATE_KEY = Regex("""-----BEGIN (?:RSA |EC |OPENSSH |DSA |PGP )?PRIVATE KEY-----""")
+    // GitHub token: documented ghp_/gho_/ghu_/ghs_/ghr_ prefix + 36 base62 characters.
+    private val GITHUB_TOKEN = Regex("""\b(?:ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]{36}\b""")
+    // Stripe LIVE secret key (sk_live_/rk_live_) — test keys (sk_test_) are safe and deliberately not matched.
+    private val STRIPE_SECRET_KEY = Regex("""\b(?:sk|rk)_live_[A-Za-z0-9]{10,}\b""")
+    // Google API key: documented AIza prefix + 35 characters.
+    private val GOOGLE_API_KEY = Regex("""\bAIza[0-9A-Za-z_-]{35}\b""")
 
     fun scan(text: String): List<Finding> =
         (scanIbans(text) + scanPans(text) + scanSsns(text) + scanSecrets(text)).sortedBy { it.range.first }
@@ -57,6 +66,9 @@ object LeakGuard {
         AWS_KEY.findAll(text).forEach { add(Finding(Kind.AWS_ACCESS_KEY, it.range, it.value, "REDACTED_AWS_ACCESS_KEY")) }
         JWT.findAll(text).forEach { add(Finding(Kind.JWT, it.range, it.value, "REDACTED_JWT")) }
         PRIVATE_KEY.findAll(text).forEach { add(Finding(Kind.PRIVATE_KEY, it.range, it.value, "REDACTED_PRIVATE_KEY")) }
+        GITHUB_TOKEN.findAll(text).forEach { add(Finding(Kind.GITHUB_TOKEN, it.range, it.value, "REDACTED_GITHUB_TOKEN")) }
+        STRIPE_SECRET_KEY.findAll(text).forEach { add(Finding(Kind.STRIPE_SECRET_KEY, it.range, it.value, "REDACTED_STRIPE_KEY")) }
+        GOOGLE_API_KEY.findAll(text).forEach { add(Finding(Kind.GOOGLE_API_KEY, it.range, it.value, "REDACTED_GOOGLE_API_KEY")) }
     }
 
     private fun scanIbans(text: String): List<Finding> = IBAN_CANDIDATE.findAll(text).mapNotNull { m ->

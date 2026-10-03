@@ -37,6 +37,23 @@ class LeakGuardTest {
     }
 
     @Test
+    fun `high-precision secret detectors flag real tokens but not safe test values`() {
+        // Format-shaped synthetic examples (not real secrets), matching each vendor's documented format.
+        val github = "ghp_1234567890abcdefghijABCDEFGHIJ123456"   // ghp_ + 36 base62
+        val stripeLive = "sk_live_0123456789abcdefABCD"             // sk_live_ + >=10 alnum
+        val google = "AIzaSyA1234567890abcdefghijklmnopqrstuv"      // AIza + 35 chars
+
+        assertEquals(LeakGuard.Kind.GITHUB_TOKEN, LeakGuard.scan("token = \"$github\"").single().kind)
+        assertEquals(LeakGuard.Kind.STRIPE_SECRET_KEY, LeakGuard.scan("stripe=$stripeLive").single().kind)
+        assertEquals(LeakGuard.Kind.GOOGLE_API_KEY, LeakGuard.scan("key: $google").single().kind)
+
+        // Stripe TEST keys are safe and must not be flagged; near-misses (wrong length) must not match.
+        assertTrue(LeakGuard.scan("sk_test_0123456789abcdefABCD").isEmpty())
+        assertTrue(LeakGuard.scan("ghp_tooShort").isEmpty())
+        assertTrue(LeakGuard.scan("AIzaTooShort").isEmpty())
+    }
+
+    @Test
     fun `a valid-checksum IBAN outside the reserved set is flagged, with a reserved replacement`() {
         val iban = BankAccountGenerator.iban(Country.DE, Rng(123L), valid = true)
         val findings = LeakGuard.scan("wire to $iban please")
