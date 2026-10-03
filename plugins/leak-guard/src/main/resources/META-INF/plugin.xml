@@ -35,6 +35,7 @@
     ]]></description>
 
     <change-notes><![CDATA[
+    <h3>1.3.0</h3><ul><li>Three more high-precision secret detectors: <b>GitHub token</b> (<code>ghp_</code>/<code>gho_</code>…), <b>Stripe live secret key</b> (<code>sk_live_</code>/<code>rk_live_</code> — safe <code>sk_test_</code> keys are deliberately ignored), and <b>Google API key</b> (<code>AIza…</code>) — each with a one-click redact fix.</li></ul>
     <h3>1.2.0</h3><ul><li>CI mode: a headless runner (<code>./gradlew :plugins:leak-guard:runCli --args="&lt;dir&gt;"</code>) scans files outside the IDE and writes a <b>SARIF 2.1.0</b> report, so the same check can gate a commit or PR. A line-independent <b>baseline</b> (only NEW findings fail) lets it go onto an existing repo without a wall of red; the matched secret is never written to the report.</li></ul>
     <h3>1.1.0</h3><ul><li>More detectors: <b>AWS access key ID</b>, <b>JWT</b>, and <b>PEM private-key</b> blocks — high-precision secret patterns, each with a one-click <b>redact</b> fix.</li></ul>
     <h3>1.0.0</h3>
