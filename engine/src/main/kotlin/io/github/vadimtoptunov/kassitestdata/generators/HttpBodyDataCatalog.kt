@@ -4,6 +4,7 @@ import io.github.vadimtoptunov.kassitestdata.core.Country
 import io.github.vadimtoptunov.kassitestdata.core.PersonaGenerator
 import io.github.vadimtoptunov.kassitestdata.core.Rng
 import io.github.vadimtoptunov.kassitestdata.data.IbanRegistry
+import io.github.vadimtoptunov.kassitestdata.nacha.Nacha
 
 /**
  * Curated subset of the shared engine for pasting straight into an HTTP request: raw
@@ -57,6 +58,14 @@ object HttpBodyDataCatalog {
             items += CatalogItem("VAT / Tax ID", "VAT/Tax ID (${country.code}) · invalid · ${country.displayName}") { seed ->
                 TaxIdGenerator.generate(country, Rng(seed), valid = false)
             }
+        }
+
+        items += CatalogItem("Routing number", "US routing number (ABA) · valid") { seed ->
+            Nacha.generateRoutingNumber(Rng(seed))
+        }
+        items += CatalogItem("Routing number", "US routing number (ABA) · invalid") { seed ->
+            val valid = Nacha.generateRoutingNumber(Rng(seed))
+            valid.dropLast(1) + ((valid.last() - '0' + 1) % 10) // wrong check digit
         }
 
         for (country in Country.entries.sortedBy { it.displayName }) {
