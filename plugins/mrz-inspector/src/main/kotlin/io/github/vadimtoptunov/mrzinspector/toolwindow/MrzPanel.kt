@@ -5,10 +5,14 @@ import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextArea
 import com.intellij.ui.components.JBTextField
 import com.intellij.util.ui.JBUI
+import io.github.vadimtoptunov.kassitestdata.core.Rng
 import io.github.vadimtoptunov.kassitestdata.inspect.IcaoTransliteration
+import io.github.vadimtoptunov.kassitestdata.inspect.MrzGenerator
 import io.github.vadimtoptunov.kassitestdata.inspect.MrzInspector
 import java.awt.BorderLayout
+import java.awt.FlowLayout
 import javax.swing.BoxLayout
+import javax.swing.JButton
 import javax.swing.JPanel
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
@@ -32,6 +36,14 @@ class MrzPanel : JPanel(BorderLayout()) {
             border = JBUI.Borders.emptyBottom(8)
             add(JBLabel("MRZ lines (one per line — TD3 2×44, TD2 2×36, TD1 3×30, or French ID 2×36):"), BorderLayout.NORTH)
             add(JBScrollPane(input), BorderLayout.CENTER)
+            add(
+                JPanel(FlowLayout(FlowLayout.LEFT, 0, 4)).apply {
+                    add(JButton("Generate sample passport (TD3)").apply {
+                        addActionListener { input.text = MrzGenerator.sampleTd3(Rng()) } // refresh() fires via the listener
+                    })
+                },
+                BorderLayout.SOUTH,
+            )
         }
         add(top, BorderLayout.NORTH)
         add(JBScrollPane(output), BorderLayout.CENTER)
