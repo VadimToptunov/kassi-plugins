@@ -346,6 +346,24 @@ object Checksums {
         return isbn10CheckChar(s.substring(0, 9)) == last
     }
 
+    /** ISSN (ISO 3297) check character: weights 8..2 over the first 7 digits; (11 - sum%11)%11, with 10 → 'X'. */
+    fun issnCheckChar(firstSeven: String): Char {
+        var sum = 0
+        for (i in 0 until 7) sum += (firstSeven[i] - '0') * (8 - i)
+        val c = (11 - (sum % 11)) % 11
+        return if (c == 10) 'X' else ('0' + c)
+    }
+
+    /** Validate a full ISSN (hyphens/spaces ignored): 7 digits + mod-11 check character (digit or 'X'). */
+    fun isValidIssn(value: String): Boolean {
+        val s = value.replace("-", "").replace(" ", "").uppercase()
+        if (s.length != 8) return false
+        if (!s.substring(0, 7).all { it in '0'..'9' }) return false
+        val last = s[7]
+        if (last !in '0'..'9' && last != 'X') return false
+        return issnCheckChar(s.substring(0, 7)) == last
+    }
+
     // ---------------------------------------------------------------------
     // JMBG — ex-Yugoslav 13-digit citizen number (RS/SI/ME/MK/BA), weighted mod-11.
     // ---------------------------------------------------------------------

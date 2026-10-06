@@ -30,6 +30,14 @@ class DataInspectorTest {
     }
 
     @Test
+    fun `validates an ISSN against published serials`() {
+        // External anchor: Nature (0028-0836) and the Wikipedia worked example (0317-8471).
+        assertTrue(passed("0317-8471", "ISSN"))
+        assertTrue(passed("0028-0836", "ISSN"))
+        assertFalse(passed("0028-0837", "ISSN")) // check digit off by one
+    }
+
+    @Test
     fun `validates a US ABA routing number against published routing numbers`() {
         // External anchor: real published Federal Reserve routing numbers (Chase, FRB Boston, Wells Fargo).
         assertTrue(passed("021000021", "ABA routing"))
