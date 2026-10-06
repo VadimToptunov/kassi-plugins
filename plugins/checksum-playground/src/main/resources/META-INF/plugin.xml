@@ -30,6 +30,7 @@
     ]]></description>
 
     <change-notes><![CDATA[
+    <h3>1.13.0</h3><ul><li>New check: <b>ISSN</b> (ISO 3297) — the serial-publication number's 8-char mod-11 check (7 digits + a check character that may be <code>X</code>), with a loadable valid example.</li></ul>
     <h3>1.12.0</h3><ul><li>New check: <b>US routing number (ABA)</b> — the 9-digit routing transit number's weighted mod-10 check (the same one real Federal Reserve routing numbers pass), with a loadable valid example.</li></ul>
     <h3>1.11.0</h3><ul><li>More checks: <b>GTIN-8 / EAN-8</b>, <b>GTIN-14</b> (GS1 mod-10), <b>FR SIREN</b> &amp; <b>SIRET</b> (Luhn), and the <b>UK NHS number</b> (weighted mod-11) — each with a loadable valid example.</li></ul>
     <h3>1.10.0</h3><ul><li>The tool window now shows a distinct stripe icon.</li></ul>

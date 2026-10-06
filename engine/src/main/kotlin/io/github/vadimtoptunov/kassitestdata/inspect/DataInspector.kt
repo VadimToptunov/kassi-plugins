@@ -135,6 +135,13 @@ object DataInspector {
             results["ISBN-10 — book (mod-11)"] = Checksums.isValidIsbn10(compact)
         }
 
+        // ISSN — 7 digits + a mod-11 check character (digit or X).
+        if (compact.length == 8 && compact.take(7).all { it in '0'..'9' } &&
+            (compact[7] in '0'..'9' || compact[7] == 'X')
+        ) {
+            results["ISSN — serial (ISO 3297)"] = Checksums.isValidIssn(compact)
+        }
+
         // FI ALV VAT — bare 8-digit base + check.
         if (digitsOnly && compact.length == 8) {
             results["FI VAT (ALV) — weighted mod-11"] = Checksums.isValidFinnishVat(compact)
