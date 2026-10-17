@@ -2,6 +2,8 @@ package io.github.vadimtoptunov.kassitestdata
 
 import io.github.vadimtoptunov.kassitestdata.algo.Checksums
 import io.github.vadimtoptunov.kassitestdata.codegen.GoTableTestGen
+import io.github.vadimtoptunov.kassitestdata.core.Country
+import io.github.vadimtoptunov.kassitestdata.generators.NationalIdGenerator
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -24,6 +26,18 @@ class GoTableTestGenTest {
         for (c in GoTableTestGen.cases(GoTableTestGen.Kind.CARD)) {
             if (c.valid) assertTrue(Checksums.isLuhnValid(c.input), "valid card must pass Luhn: ${c.name}")
             else assertFalse(Checksums.isLuhnValid(c.input), "invalid card must fail Luhn: ${c.name}")
+        }
+    }
+
+    @Test
+    fun `NATIONAL_ID cases are exactly as labelled (round-trip through the scheme validator)`() {
+        val cases = GoTableTestGen.cases(GoTableTestGen.Kind.NATIONAL_ID)
+        assertTrue(cases.size >= 10, "expected several countries (NL/DE/AU/GB/CY)")
+        for (c in cases) {
+            val code = c.name.substringBefore(' ')
+            val country = Country.entries.first { it.code == code }
+            if (c.valid) assertTrue(NationalIdGenerator.isValid(country, c.input), "valid: ${c.name} -> ${c.input}")
+            else assertFalse(NationalIdGenerator.isValid(country, c.input), "invalid: ${c.name} -> ${c.input}")
         }
     }
 
