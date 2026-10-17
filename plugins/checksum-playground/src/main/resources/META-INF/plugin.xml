@@ -23,13 +23,15 @@
     </ul>
     <p>Open it from <b>View ▸ Tool Windows ▸ Test Data Playground</b>. Uses the same validated engine as
     the <i>Kassi Test Data</i> generator.</p>
-    <p><b>More Kassi tools for QA &amp; fintech:</b>
-    <a href="https://plugins.jetbrains.com/plugin/33149">Kassi Test Data</a> — generate valid IBANs, cards,
-    BIC/SWIFT, VAT and national IDs (the inverse of this validator).</p>
+    <p><b>More from the Kassi QA &amp; fintech toolkit:</b></p>
+    <p><b>Spec-valid test data:</b> <a href="https://plugins.jetbrains.com/plugin/33149">Kassi Test Data</a> (the inverse of this validator) · <a href="https://plugins.jetbrains.com/plugin/34869">Go Test Data</a> · <a href="https://plugins.jetbrains.com/plugin/34834">pytest Fixtures</a> · <a href="https://plugins.jetbrains.com/plugin/33488">UUID / ULID / NanoID Toolkit</a> · <a href="https://plugins.jetbrains.com/plugin/33967">HTTP Data Injector</a></p>
+    <p><b>Fintech &amp; validators:</b> <a href="https://plugins.jetbrains.com/plugin/34673">ACH / NACHA Toolkit</a> · <a href="https://plugins.jetbrains.com/plugin/33419">ISO 8583 Inspector</a> · <a href="https://plugins.jetbrains.com/plugin/33836">SWIFT MT Validator</a></p>
+    <p><b>QA &amp; testing:</b> <a href="https://plugins.jetbrains.com/plugin/33849">Flaky Test Linter</a> · <a href="https://plugins.jetbrains.com/plugin/34235">Compose Testability Linter</a> · <a href="https://plugins.jetbrains.com/plugin/33325">MRZ &amp; Barcode Inspector</a> · <a href="https://plugins.jetbrains.com/plugin/34133">Secret &amp; Card Leak Guard</a> · <a href="https://plugins.jetbrains.com/plugin/33588">dbt Navigator</a></p>
     <p><b>Source, issues &amp; docs:</b> <a href="https://github.com/VadimToptunov/kassi-plugins">github.com/VadimToptunov/kassi-plugins</a></p>
     ]]></description>
 
     <change-notes><![CDATA[
+    <h3>1.14.0</h3><ul><li>Three new security / provider checks: <b>CUSIP</b> (North-American security, "double add double"), <b>SEDOL</b> (London Stock Exchange, weighted mod-10) and <b>US NPI</b> (National Provider Identifier, Luhn over the 80840 prefix) — each with a loadable valid example.</li></ul>
     <h3>1.13.0</h3><ul><li>New check: <b>ISSN</b> (ISO 3297) — the serial-publication number's 8-char mod-11 check (7 digits + a check character that may be <code>X</code>), with a loadable valid example.</li></ul>
     <h3>1.12.0</h3><ul><li>New check: <b>US routing number (ABA)</b> — the 9-digit routing transit number's weighted mod-10 check (the same one real Federal Reserve routing numbers pass), with a loadable valid example.</li></ul>
     <h3>1.11.0</h3><ul><li>More checks: <b>GTIN-8 / EAN-8</b>, <b>GTIN-14</b> (GS1 mod-10), <b>FR SIREN</b> &amp; <b>SIRET</b> (Luhn), and the <b>UK NHS number</b> (weighted mod-11) — each with a loadable valid example.</li></ul>
