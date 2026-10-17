@@ -1,9 +1,11 @@
 package io.github.vadimtoptunov.kassitestdata.codegen
 
+import io.github.vadimtoptunov.kassitestdata.core.Country
 import io.github.vadimtoptunov.kassitestdata.core.Rng
 import io.github.vadimtoptunov.kassitestdata.data.IbanRegistry
 import io.github.vadimtoptunov.kassitestdata.generators.BankAccountGenerator
 import io.github.vadimtoptunov.kassitestdata.generators.CardGenerator
+import io.github.vadimtoptunov.kassitestdata.generators.NationalIdGenerator
 
 /**
  * Emits an idiomatic Go table-driven test whose cases are spec-valid values (and their invalid
@@ -16,7 +18,11 @@ object GoTableTestGen {
     enum class Kind(val funcName: String, val field: String) {
         IBAN("ValidateIBAN", "iban"),
         CARD("ValidateCard", "card"),
+        NATIONAL_ID("ValidateNationalID", "id"),
     }
+
+    // Countries whose national-ID scheme the engine validates (checksum-backed).
+    private val NATIONAL_ID_COUNTRIES = listOf(Country.NL, Country.DE, Country.AU, Country.GB, Country.CY)
 
     /** One `{name, input, valid}` row of the generated table. */
     data class Case(val name: String, val input: String, val valid: Boolean)
@@ -33,6 +39,12 @@ object GoTableTestGen {
             listOf(
                 Case("${n.displayName} valid", CardGenerator.pan(n, Rng(seed), valid = true), true),
                 Case("${n.displayName} fails Luhn", CardGenerator.pan(n, Rng(seed), valid = false), false),
+            )
+        }
+        Kind.NATIONAL_ID -> NATIONAL_ID_COUNTRIES.flatMap { c ->
+            listOf(
+                Case("${c.code} valid", NationalIdGenerator.generate(c, Rng(seed), valid = true), true),
+                Case("${c.code} invalid", NationalIdGenerator.generate(c, Rng(seed), valid = false), false),
             )
         }
     }

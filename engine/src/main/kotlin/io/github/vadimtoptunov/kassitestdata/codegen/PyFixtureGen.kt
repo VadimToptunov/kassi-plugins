@@ -11,6 +11,7 @@ object PyFixtureGen {
     private fun pyFunc(kind: GoTableTestGen.Kind): String = when (kind) {
         GoTableTestGen.Kind.IBAN -> "validate_iban"
         GoTableTestGen.Kind.CARD -> "validate_card"
+        GoTableTestGen.Kind.NATIONAL_ID -> "validate_national_id"
     }
 
     /** A complete pytest parametrized validation test for [kind]. */

@@ -25,6 +25,7 @@
     ]]></description>
 
     <change-notes><![CDATA[
+    <h3>1.1.0</h3><ul><li>New data kind: <b>National ID</b> (NL/DE/AU/GB/CY) — generate a parametrized test whose rows are checksum-valid national IDs plus their invalid variants.</li></ul>
     <h3>1.0.0</h3>
     <ul><li>First release: generate pytest parametrized tests for IBAN and Card (PAN) validation — valid values and their invalid variants, from the checksummed Kassi engine.</li></ul>
     ]]></change-notes>
