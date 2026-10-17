@@ -36,6 +36,34 @@ class ChecksumsTest {
     }
 
     @Test
+    fun `CUSIP reference (published securities)`() {
+        // External anchor: Wikipedia's worked CUSIP list — Apple 037833100, Microsoft 594918104,
+        // Cisco 17275R102 (letter in the base).
+        assertTrue(Checksums.isValidCusip("037833100"))
+        assertTrue(Checksums.isValidCusip("594918104"))
+        assertTrue(Checksums.isValidCusip("17275R102"))
+        assertFalse(Checksums.isValidCusip("037833101")) // check digit off by one
+    }
+
+    @Test
+    fun `SEDOL reference (published examples)`() {
+        // External anchor: Wikipedia's SEDOL examples — B0YBKJ7, 0263494, 0540528.
+        assertTrue(Checksums.isValidSedol("B0YBKJ7"))
+        assertTrue(Checksums.isValidSedol("0263494"))
+        assertTrue(Checksums.isValidSedol("0540528"))
+        assertFalse(Checksums.isValidSedol("B0YBKJ8")) // check digit off by one
+        assertFalse(Checksums.isValidSedol("A0YBKJ7")) // vowel 'A' is not a legal SEDOL character
+    }
+
+    @Test
+    fun `NPI reference (CMS published example)`() {
+        // External anchor: the CMS NPI check-digit worked example — 1234567893.
+        assertTrue(Checksums.isValidNpi("1234567893"))
+        assertFalse(Checksums.isValidNpi("1234567890")) // check digit off by one
+        assertFalse(Checksums.isValidNpi("123456789"))  // too short
+    }
+
+    @Test
     fun `IBAN mod-97 accepts known-valid and rejects corrupted`() {
         assertTrue(Checksums.isValidIbanMod97("GB82 WEST 1234 5698 7654 32"))
         assertTrue(Checksums.isValidIbanMod97("DE89370400440532013000"))

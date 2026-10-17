@@ -101,6 +101,45 @@ object Checksums {
         return luhnCheckDigit(expanded) == (s[11] - '0')
     }
 
+    /** CUSIP (North-American security): 8-char base + "double add double" check digit (letters A=10..Z=35, *=36,@=37,#=38). */
+    fun isValidCusip(value: String): Boolean {
+        val s = value.uppercase()
+        if (!Regex("^[0-9A-Z*@#]{8}[0-9]$").matches(s)) return false
+        var sum = 0
+        for (i in 0 until 8) {
+            var v = cusipValue(s[i])
+            if (i % 2 == 1) v *= 2
+            sum += v / 10 + v % 10
+        }
+        return (10 - sum % 10) % 10 == (s[8] - '0')
+    }
+
+    private fun cusipValue(c: Char): Int = when (c) {
+        in '0'..'9' -> c - '0'
+        in 'A'..'Z' -> c - 'A' + 10
+        '*' -> 36; '@' -> 37; '#' -> 38
+        else -> 0
+    }
+
+    // SEDOL (London Stock Exchange security): 6-char base (digits/consonants) + weighted mod-10 check.
+    private val SEDOL_WEIGHTS = intArrayOf(1, 3, 1, 7, 3, 9)
+
+    /** SEDOL: 7 chars; vowels are never used; the 7th is a weighted mod-10 check digit. */
+    fun isValidSedol(value: String): Boolean {
+        val s = value.uppercase()
+        if (!Regex("^[0-9BCDFGHJKLMNPQRSTVWXYZ]{6}[0-9]$").matches(s)) return false
+        var sum = 0
+        for (i in 0 until 6) {
+            val v = if (s[i] in '0'..'9') s[i] - '0' else s[i] - 'A' + 10
+            sum += v * SEDOL_WEIGHTS[i]
+        }
+        return (10 - sum % 10) % 10 == (s[6] - '0')
+    }
+
+    /** NPI (US National Provider Identifier): 10 digits; Luhn over the mandated 80840 prefix. */
+    fun isValidNpi(value: String): Boolean =
+        value.length == 10 && value.all { it in '0'..'9' } && isLuhnValid("80840$value")
+
     /** EAN-13 / GTIN-13 check digit (alternating 1,3 weights). */
     fun isValidEan13(value: String): Boolean {
         if (value.length != 13 || !value.all { it in '0'..'9' }) return false

@@ -60,9 +60,24 @@ object DataInspector {
             results["GTIN-8 / EAN-8 — GS1 mod-10"] = Checksums.isValidGtin8(compact)
         }
 
-        // UK NHS number (10 digits, weighted mod-11).
+        // UK NHS number and US NPI are both 10 digits (different algorithms — show both verdicts).
         if (digitsOnly && compact.length == 10) {
             results["UK NHS number — weighted mod-11"] = Checksums.isValidNhsNumber(compact)
+            results["US NPI — Luhn over 80840 prefix"] = Checksums.isValidNpi(compact)
+        }
+
+        // SEDOL — 7 chars (6-char base of digits/consonants + a weighted mod-10 check digit).
+        if (compact.length == 7 && compact.last().isDigit() &&
+            compact.take(6).all { it in '0'..'9' || it in "BCDFGHJKLMNPQRSTVWXYZ" }
+        ) {
+            results["SEDOL — LSE security (weighted mod-10)"] = Checksums.isValidSedol(compact)
+        }
+
+        // CUSIP — 9 chars: 8-char base + "double add double" check digit.
+        if (compact.length == 9 && compact.last().isDigit() &&
+            compact.take(8).all { it in '0'..'9' || it in 'A'..'Z' }
+        ) {
+            results["CUSIP — North-American security"] = Checksums.isValidCusip(compact)
         }
 
         // 14-digit schemes: GTIN-14 and the French SIRET (establishment).
