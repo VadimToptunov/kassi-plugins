@@ -6,7 +6,7 @@ plugins {
 }
 
 // Overridable at release time: -PpluginVersion=1.0.1
-version = (findProperty("pluginVersion") as String?) ?: "1.8.1"
+version = (findProperty("pluginVersion") as String?) ?: "1.9.0"
 
 intellij {
     version.set("2023.2.6")
