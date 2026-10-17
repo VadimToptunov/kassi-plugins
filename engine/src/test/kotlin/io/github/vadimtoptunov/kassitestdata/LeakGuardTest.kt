@@ -109,9 +109,33 @@ class LeakGuardTest {
     }
 
     @Test
+    fun `secret detectors flag Slack, GitLab and npm tokens with a redaction fix`() {
+        // Tokens are assembled from fragments so no full token literal sits in source (which would
+        // trip upstream secret scanners). Each still matches its documented format.
+        // Slack token — documented xoxb- bot-token format.
+        val slack = LeakGuard.scan("SLACK_TOKEN=" + "xox" + "b-2468135790-1357924680-aBcDeFgHiJkLmNoPqRsTuVwX").single()
+        assertEquals(LeakGuard.Kind.SLACK_TOKEN, slack.kind)
+        assertEquals(false, slack.kind.synthetic)
+        assertTrue(LeakGuard.scan(slack.replacement).isEmpty(), "the redaction placeholder must not re-flag")
+
+        // GitLab PAT — documented glpat- prefix + 20 chars.
+        assertEquals(
+            LeakGuard.Kind.GITLAB_PAT,
+            LeakGuard.scan("gitlab: glp" + "at-ABCDEFghijkl1234_xyz").single().kind,
+        )
+
+        // npm token — documented npm_ prefix + 36 base62 chars.
+        assertEquals(
+            LeakGuard.Kind.NPM_TOKEN,
+            LeakGuard.scan("//registry.npmjs.org/:_authToken=" + "npm" + "_abcdefghijklmnopqrstuvwxyz0123456789").single().kind,
+        )
+    }
+
+    @Test
     fun `secret detectors do not fire on lookalike non-secrets`() {
         assertTrue(LeakGuard.scan("prefix AKIA123 short and AKIALOWERcase0000000 nope").isEmpty()) // too short / lowercase
         assertTrue(LeakGuard.scan("not a jwt: eyJonly.one").isEmpty())
+        assertTrue(LeakGuard.scan("gitlab: glpat-tooshort and npm_too_short").isEmpty())        // wrong lengths
     }
 
     @Test
