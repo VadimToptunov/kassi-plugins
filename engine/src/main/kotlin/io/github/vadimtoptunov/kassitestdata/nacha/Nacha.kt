@@ -72,14 +72,19 @@ object Nacha {
      * total-credit amount is corrupted by one cent, so a validator flags exactly that field (a targeted
      * negative-test fixture) while the rest of the file stays well-formed.
      */
+    /** The Standard Entry Class codes this generator supports (all consumer/corporate ACH, 3 letters). */
+    val SEC_CODES = listOf("PPD", "CCD", "WEB", "TEL")
+
     fun generateFile(
         entries: List<Entry>,
         originRouting: String,
         companyName: String = "KASSI TEST CO",
         companyId: String = "1234567890",
         valid: Boolean = true,
+        secCode: String = "PPD",
     ): String {
         require(entries.isNotEmpty()) { "at least one entry" }
+        require(secCode in SEC_CODES) { "unsupported SEC code: $secCode" }
         val originDfi = originRouting.take(8)
         val creditCents = entries.filterNot { it.isDebit }.sumOf { it.amountCents }
         val debitCents = entries.filter { it.isDebit }.sumOf { it.amountCents }
@@ -91,7 +96,7 @@ object Nacha {
 
         val lines = ArrayList<String>()
         lines += fileHeader(originRouting)
-        lines += batchHeader(serviceClass, companyName, companyId, originDfi)
+        lines += batchHeader(serviceClass, companyName, companyId, originDfi, secCode)
         entries.forEachIndexed { i, e ->
             lines += entryDetail(e, originDfi, i + 1L)
             if (e.addenda != null) lines += addendaRecord(e.addenda, i + 1L)
@@ -106,14 +111,14 @@ object Nacha {
     }
 
     /** A ready-made sample file (seeded) using real published routing numbers, for the "insert sample" action. */
-    fun sampleFile(rng: Rng, valid: Boolean = true): String {
+    fun sampleFile(rng: Rng, valid: Boolean = true, secCode: String = "PPD"): String {
         val entries = listOf(
             // The first entry carries a type-7 addenda (payment-related information).
             Entry("22", "021000021", "12345678", 125_00, "ALICE EXAMPLE", addenda = "INV 10042 PAYMENT"), // JPMorgan Chase
             Entry("22", "011000015", "98765432", 4_200_00, "BOB EXAMPLE"),    // FRB Boston
             Entry("27", "121000248", "55554444", 50_00, "CAROL EXAMPLE"),     // Wells Fargo (debit)
         )
-        return generateFile(entries, originRouting = generateRoutingNumber(rng), valid = valid)
+        return generateFile(entries, originRouting = generateRoutingNumber(rng), valid = valid, secCode = secCode)
     }
 
     private fun serviceClassFor(entries: List<Entry>): String {
@@ -148,14 +153,14 @@ object Nacha {
         append(fit("", 8))
     }
 
-    private fun batchHeader(serviceClass: String, companyName: String, companyId: String, originDfi: String): String =
+    private fun batchHeader(serviceClass: String, companyName: String, companyId: String, originDfi: String, secCode: String): String =
         buildString {
             append('5')
             append(serviceClass)
             append(fit(companyName, 16))
             append(fit("", 20))                 // company discretionary data
             append(fit(companyId, 10))
-            append("PPD")                        // standard entry class
+            append(fit(secCode, 3))              // standard entry class (PPD/CCD/WEB/TEL)
             append(fit("PAYROLL", 10))           // company entry description
             append(fit("", 6))                   // company descriptive date
             append("260102")                     // effective entry date YYMMDD

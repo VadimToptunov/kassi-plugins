@@ -45,6 +45,18 @@ class NachaTest {
     }
 
     @Test
+    fun `each supported SEC code produces a valid file carrying that code in the batch header`() {
+        // The SEC code occupies positions 51-53 (0-indexed 50..52) of the type-5 batch header record,
+        // per the NACHA Operating Rules / file-format spec.
+        for (sec in Nacha.SEC_CODES) {
+            val file = Nacha.sampleFile(Rng(7L), valid = true, secCode = sec)
+            val batchHeader = file.split("\n").first { it[0] == '5' }
+            assertEquals(sec, batchHeader.substring(50, 53), "batch header carries the $sec SEC code")
+            assertTrue(Nacha.validate(file).isEmpty(), "$sec file validates: ${Nacha.validate(file)}")
+        }
+    }
+
+    @Test
     fun `the invalid variant is flagged on the total-credit control`() {
         val problems = Nacha.validate(Nacha.sampleFile(Rng(42L), valid = false))
         assertTrue(problems.any { it.message.contains("total credit") }, "expected a total-credit problem, got $problems")
