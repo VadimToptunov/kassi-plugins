@@ -34,6 +34,9 @@ object LeakGuard {
         GITHUB_TOKEN("GitHub token", synthetic = false),
         STRIPE_SECRET_KEY("Stripe live secret key", synthetic = false),
         GOOGLE_API_KEY("Google API key", synthetic = false),
+        SLACK_TOKEN("Slack token", synthetic = false),
+        GITLAB_PAT("GitLab personal access token", synthetic = false),
+        NPM_TOKEN("npm access token", synthetic = false),
     }
 
     data class Finding(val kind: Kind, val range: IntRange, val matched: String, val replacement: String)
@@ -58,6 +61,12 @@ object LeakGuard {
     private val STRIPE_SECRET_KEY = Regex("""\b(?:sk|rk)_live_[A-Za-z0-9]{10,}\b""")
     // Google API key: documented AIza prefix + 35 characters.
     private val GOOGLE_API_KEY = Regex("""\bAIza[0-9A-Za-z_-]{35}\b""")
+    // Slack token: documented xoxb-/xoxp-/xoxa-/xoxr-/xoxs-/xoxe- prefix + hyphen-separated token body.
+    private val SLACK_TOKEN = Regex("""\bxox[baprse]-[A-Za-z0-9-]{10,}\b""")
+    // GitLab personal access token: documented glpat- prefix + 20 base62/-/_ characters.
+    private val GITLAB_PAT = Regex("""\bglpat-[A-Za-z0-9_-]{20}\b""")
+    // npm access token: documented npm_ prefix + 36 base62 characters.
+    private val NPM_TOKEN = Regex("""\bnpm_[A-Za-z0-9]{36}\b""")
 
     fun scan(text: String): List<Finding> =
         (scanIbans(text) + scanPans(text) + scanSsns(text) + scanSecrets(text)).sortedBy { it.range.first }
@@ -69,6 +78,9 @@ object LeakGuard {
         GITHUB_TOKEN.findAll(text).forEach { add(Finding(Kind.GITHUB_TOKEN, it.range, it.value, "REDACTED_GITHUB_TOKEN")) }
         STRIPE_SECRET_KEY.findAll(text).forEach { add(Finding(Kind.STRIPE_SECRET_KEY, it.range, it.value, "REDACTED_STRIPE_KEY")) }
         GOOGLE_API_KEY.findAll(text).forEach { add(Finding(Kind.GOOGLE_API_KEY, it.range, it.value, "REDACTED_GOOGLE_API_KEY")) }
+        SLACK_TOKEN.findAll(text).forEach { add(Finding(Kind.SLACK_TOKEN, it.range, it.value, "REDACTED_SLACK_TOKEN")) }
+        GITLAB_PAT.findAll(text).forEach { add(Finding(Kind.GITLAB_PAT, it.range, it.value, "REDACTED_GITLAB_PAT")) }
+        NPM_TOKEN.findAll(text).forEach { add(Finding(Kind.NPM_TOKEN, it.range, it.value, "REDACTED_NPM_TOKEN")) }
     }
 
     private fun scanIbans(text: String): List<Finding> = IBAN_CANDIDATE.findAll(text).mapNotNull { m ->
