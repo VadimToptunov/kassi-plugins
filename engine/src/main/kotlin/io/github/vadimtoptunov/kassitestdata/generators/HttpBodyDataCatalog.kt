@@ -74,8 +74,23 @@ object HttpBodyDataCatalog {
             }
         }
 
+        // Opaque identifiers commonly sent as resource IDs / idempotency keys in request bodies & headers.
+        // The time-ordered forms take a timestamp derived from the seed, so a seeded insert stays
+        // reproducible (an unseeded insert uses the wall clock for a genuinely fresh, current value).
+        items += CatalogItem("Identifier", "UUID v4 (random)") { seed -> IdToolkit.uuidV4(Rng(seed)) }
+        items += CatalogItem("Identifier", "UUID v7 (time-ordered)") { seed ->
+            IdToolkit.uuidV7(Rng(seed), timestampFor(seed))
+        }
+        items += CatalogItem("Identifier", "ULID") { seed -> IdToolkit.ulid(Rng(seed), timestampFor(seed)) }
+        items += CatalogItem("Identifier", "NanoID") { seed -> IdToolkit.nanoId(Rng(seed)) }
+
         return items
     }
+
+    // A deterministic, plausibly-recent timestamp for seeded inserts; the wall clock when unseeded.
+    private const val TS_BASE_MS = 1_700_000_000_000L // 2023-11-14, a fixed base for seeded reproducibility
+    private fun timestampFor(seed: Long?): Long =
+        if (seed == null) System.currentTimeMillis() else TS_BASE_MS + Math.floorMod(seed, 86_400_000L)
 
     // Countries with a national-ID / tax-ID scheme in the engine (v1).
     private val NATIONAL_ID_COUNTRIES = listOf(Country.NL, Country.DE, Country.AU, Country.GB, Country.CY)
