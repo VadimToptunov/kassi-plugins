@@ -4,6 +4,7 @@ import io.github.vadimtoptunov.kassitestdata.algo.Checksums
 import io.github.vadimtoptunov.kassitestdata.core.Country
 import io.github.vadimtoptunov.kassitestdata.generators.BicGenerator
 import io.github.vadimtoptunov.kassitestdata.generators.HttpBodyDataCatalog
+import io.github.vadimtoptunov.kassitestdata.generators.IdToolkit
 import io.github.vadimtoptunov.kassitestdata.generators.NationalIdGenerator
 import io.github.vadimtoptunov.kassitestdata.nacha.Nacha
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -13,7 +14,7 @@ import org.junit.jupiter.api.Test
 
 class HttpBodyDataCatalogTest {
 
-    private val allowedGroups = setOf("IBAN", "Card", "BIC", "National ID", "VAT / Tax ID", "Persona", "Routing number")
+    private val allowedGroups = setOf("IBAN", "Card", "BIC", "National ID", "VAT / Tax ID", "Persona", "Routing number", "Identifier")
 
     private fun jsonField(json: String, key: String): String {
         val match = Regex("\"$key\":\\s*\"([^\"]*)\"").find(json)
@@ -28,6 +29,27 @@ class HttpBodyDataCatalogTest {
         for (item in items) {
             assertTrue(item.group in allowedGroups, "unexpected group ${item.group} for ${item.label}")
             assertFalse(item.produce(42L).isBlank(), "blank output for ${item.label}")
+        }
+    }
+
+    @Test
+    fun `Identifier items are well-formed UUIDs, ULIDs or NanoIDs`() {
+        val ids = HttpBodyDataCatalog.items().filter { it.group == "Identifier" }
+        assertEquals(4, ids.size, "expected UUID v4/v7, ULID and NanoID")
+        for (item in ids) {
+            val value = item.produce(7L)
+            when {
+                item.label.contains("UUID v4") ->
+                    assertEquals(4, IdToolkit.inspectUuid(value)!!.version)
+                item.label.contains("UUID v7") ->
+                    assertEquals(7, IdToolkit.inspectUuid(value)!!.version)
+                item.label.contains("ULID") -> {
+                    assertEquals(26, value.length)                       // Crockford base32, 26 chars
+                    assertTrue(IdToolkit.ulidTimestampMillis(value) != null, "ULID timestamp parses: $value")
+                }
+                item.label.contains("NanoID") ->
+                    assertEquals(21, value.length)                       // default NanoID size
+            }
         }
     }
 

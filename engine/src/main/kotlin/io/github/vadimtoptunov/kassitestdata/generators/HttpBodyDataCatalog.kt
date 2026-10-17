@@ -74,6 +74,14 @@ object HttpBodyDataCatalog {
             }
         }
 
+        // Opaque identifiers commonly sent as resource IDs / idempotency keys in request bodies & headers.
+        items += CatalogItem("Identifier", "UUID v4 (random)") { seed -> IdToolkit.uuidV4(Rng(seed)) }
+        items += CatalogItem("Identifier", "UUID v7 (time-ordered)") { seed ->
+            IdToolkit.uuidV7(Rng(seed), System.currentTimeMillis())
+        }
+        items += CatalogItem("Identifier", "ULID") { seed -> IdToolkit.ulid(Rng(seed), System.currentTimeMillis()) }
+        items += CatalogItem("Identifier", "NanoID") { seed -> IdToolkit.nanoId(Rng(seed)) }
+
         return items
     }
 
