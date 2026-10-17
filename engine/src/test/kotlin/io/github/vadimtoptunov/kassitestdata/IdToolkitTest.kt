@@ -43,6 +43,18 @@ class IdToolkitTest {
     }
 
     @Test
+    fun `UUID v8 reference (RFC 9562 example) and generated is well-formed`() {
+        // External anchor: the custom UUIDv8 example from RFC 9562 §5.8.
+        val ref = IdToolkit.inspectUuid("2489e9ad-2ee2-8e00-8ec9-32d5f69181c0")!!
+        assertEquals(8, ref.version)
+        assertEquals("RFC 4122 (10x)", ref.variant)
+        // Generated v8s carry the fixed version (8) and variant (10xx) bits.
+        val gen = IdToolkit.inspectUuid(IdToolkit.uuidV8(Rng()))!!
+        assertEquals(8, gen.version)
+        assertEquals("RFC 4122 (10x)", gen.variant)
+    }
+
+    @Test
     fun `UUID v1 reference (RFC 4122 example) decodes fields`() {
         // RFC 4122's own worked example UUID. Fields read directly per the v1 layout (external anchor).
         val v1 = IdToolkit.inspectUuid("f81d4fae-7dec-11d0-a765-00a0c91e6bf6")!!

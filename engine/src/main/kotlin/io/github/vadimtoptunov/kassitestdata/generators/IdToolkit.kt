@@ -39,6 +39,15 @@ object IdToolkit {
         return formatUuid(b)
     }
 
+    /** Custom/vendor UUID version 8 (RFC 9562 §5.8): only the version (8) and variant (10xx) bits are
+     *  fixed; the remaining 122 bits are implementation-defined — here filled at random for test data. */
+    fun uuidV8(rng: Rng): String {
+        val b = randomBytes(rng, 16)
+        b[6] = ((b[6].toInt() and 0x0F) or 0x80).toByte() // version 8
+        b[8] = ((b[8].toInt() and 0x3F) or 0x80).toByte() // variant 10xx
+        return formatUuid(b)
+    }
+
     private const val GREG_UNIX_OFFSET_100NS = 0x01B21DD213814000L // 100-ns intervals from 1582-10-15 to 1970-01-01
 
     /** Time-ordered UUID version 6 (RFC 9562): reordered 60-bit Gregorian timestamp + random tail. */

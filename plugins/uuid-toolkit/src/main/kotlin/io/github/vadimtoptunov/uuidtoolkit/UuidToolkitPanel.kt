@@ -60,6 +60,7 @@ class UuidToolkitPanel : JPanel(BorderLayout()) {
             add(uuidButton("UUID v4") { IdToolkit.uuidV4(rng) })
             add(uuidButton("UUID v6") { IdToolkit.uuidV6(rng, System.currentTimeMillis()) })
             add(uuidButton("UUID v7") { IdToolkit.uuidV7(rng, System.currentTimeMillis()) })
+            add(uuidButton("UUID v8") { IdToolkit.uuidV8(rng) })
             add(plainButton("ULID") { IdToolkit.ulid(rng, System.currentTimeMillis()) })
             add(plainButton("NanoID") { IdToolkit.nanoId(rng) })
         }
