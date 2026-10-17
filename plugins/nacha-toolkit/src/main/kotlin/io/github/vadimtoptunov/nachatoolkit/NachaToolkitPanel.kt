@@ -1,6 +1,7 @@
 package io.github.vadimtoptunov.nachatoolkit
 
 import com.intellij.openapi.ide.CopyPasteManager
+import com.intellij.openapi.ui.ComboBox
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextArea
@@ -26,12 +27,15 @@ class NachaToolkitPanel : JPanel(BorderLayout()) {
     }
     private val resultArea = JBTextArea(8, 96).apply { isEditable = false }
     private val rng = Rng() // unseeded: a fresh sample each click
+    private val secPicker = ComboBox(Nacha.SEC_CODES.toTypedArray()) // standard entry class for generated samples
 
     init {
         border = JBUI.Borders.empty(8)
 
         val buttons = JPanel(FlowLayout(FlowLayout.LEFT, 8, 0)).apply {
             add(JButton("Validate").apply { addActionListener { runValidation() } })
+            add(JBLabel("SEC:"))
+            add(secPicker)
             add(JButton("Generate sample").apply { addActionListener { generate(valid = true) } })
             add(JButton("Generate invalid sample").apply { addActionListener { generate(valid = false) } })
             add(JButton("Copy").apply { addActionListener { copyFile() } })
@@ -71,9 +75,10 @@ class NachaToolkitPanel : JPanel(BorderLayout()) {
     }
 
     private fun generate(valid: Boolean) {
-        fileArea.text = Nacha.sampleFile(rng, valid = valid)
+        val sec = secPicker.item ?: "PPD"
+        fileArea.text = Nacha.sampleFile(rng, valid = valid, secCode = sec)
         resultArea.text = if (valid) {
-            "Generated a spec-valid PPD sample (3 entries). Click Validate to confirm."
+            "Generated a spec-valid $sec sample (3 entries). Click Validate to confirm."
         } else {
             "Generated a deliberately-invalid sample (total-credit control is off by one cent) — " +
                 "click Validate to see it flagged."
