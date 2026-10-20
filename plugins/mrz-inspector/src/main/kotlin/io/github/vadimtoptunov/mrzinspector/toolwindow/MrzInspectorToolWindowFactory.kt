@@ -13,6 +13,7 @@ import com.intellij.ui.content.ContentFactory
 class MrzInspectorToolWindowFactory : ToolWindowFactory {
 
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
+        reviewPrompt.recordUse(project)
         val tabs = JBTabbedPane()
         tabs.addTab("MRZ", MrzPanel())
         tabs.addTab("Barcode (AAMVA)", BarcodePanel())

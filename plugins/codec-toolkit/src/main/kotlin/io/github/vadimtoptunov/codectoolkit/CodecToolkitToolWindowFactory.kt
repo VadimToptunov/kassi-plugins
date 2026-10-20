@@ -9,6 +9,7 @@ import com.intellij.ui.content.ContentFactory
 class CodecToolkitToolWindowFactory : ToolWindowFactory {
 
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
+        reviewPrompt.recordUse(project)
         val content = ContentFactory.getInstance().createContent(CodecToolkitPanel(), "", false)
         toolWindow.contentManager.addContent(content)
     }

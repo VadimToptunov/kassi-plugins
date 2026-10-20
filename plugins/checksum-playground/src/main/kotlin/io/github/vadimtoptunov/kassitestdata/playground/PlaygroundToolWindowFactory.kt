@@ -10,6 +10,7 @@ import com.intellij.ui.content.ContentFactory
 class PlaygroundToolWindowFactory : ToolWindowFactory {
 
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
+        reviewPrompt.recordUse(project)
         val tabs = JBTabbedPane().apply {
             addTab("Checksums", ChecksumPanel())
             addTab("Regex", RegexPanel())

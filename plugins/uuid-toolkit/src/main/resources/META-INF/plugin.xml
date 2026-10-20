@@ -28,6 +28,7 @@
     ]]></description>
 
     <change-notes><![CDATA[
+    <h3>1.10.0</h3><ul><li>Asks once for a Marketplace review after you have used the plugin for a while — a plain, dismissable notification with "Don't ask again". Nothing else changes.</li></ul>
     <h3>1.9.0</h3><ul><li>New generator: <b>UUID v8</b> (RFC 9562 §5.8) — the custom/vendor variant with the fixed version (8) and variant (10xx) bits and a random 122-bit payload. The inspector already identifies it.</li></ul>
     <h3>1.8.1</h3><ul><li>Compatibility: the format picker no longer uses a list-cell-renderer factory scheduled for removal on the 2026.x IDE platform. No behavior change.</li></ul>
     <h3>1.8.0</h3><ul><li>Bulk generate + formats: set a <b>Count</b> to emit many identifiers per click, choose a UUID output <b>format</b> (UPPERCASE, <code>{braces}</code>, <code>urn:uuid:</code>, or no-hyphens), and <b>Copy all</b> to the clipboard in one click.</li></ul>
@@ -45,6 +46,7 @@
     <depends>com.intellij.modules.platform</depends>
 
     <extensions defaultExtensionNs="com.intellij">
+        <notificationGroup id="Kassi UUID Toolkit" displayType="BALLOON"/>
         <toolWindow id="ID Toolkit"
                     anchor="right"
                     secondary="true"

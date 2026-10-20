@@ -30,6 +30,7 @@
     ]]></description>
 
     <change-notes><![CDATA[
+    <h3>1.3.0</h3><ul><li>Asks once for a Marketplace review after you have used the plugin for a while — a plain, dismissable notification with "Don't ask again". Nothing else changes.</li></ul>
     <h3>1.2.0</h3><ul><li>Pick the <b>Standard Entry Class</b> for generated samples: <b>PPD</b>, <b>CCD</b>, <b>WEB</b> or <b>TEL</b>. The SEC code is written into the batch-header record and the file still validates.</li></ul>
     <h3>1.1.0</h3><ul><li><b>Addenda records (type 7)</b>: generated sample files now carry a payment-related addenda (type code 05) on an entry — with the entry's addenda indicator set and the batch/file entry+addenda counts updated — and validation recognises type-7 records, checks their addenda type code, and includes them in the control-total count.</li></ul>
     <h3>1.0.0</h3><ul><li>Initial release: a tool window to <b>validate</b> a NACHA ACH file (record length, ABA routing check digits, entry hash, batch/file control totals, block count) and to <b>generate</b> a spec-valid PPD sample file plus a deliberately-invalid variant. Offline and deterministic.</li></ul>
@@ -38,6 +39,7 @@
     <depends>com.intellij.modules.platform</depends>
 
     <extensions defaultExtensionNs="com.intellij">
+        <notificationGroup id="Kassi NACHA Toolkit" displayType="BALLOON"/>
         <toolWindow id="ACH / NACHA"
                     anchor="right"
                     secondary="true"
