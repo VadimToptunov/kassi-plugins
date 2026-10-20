@@ -18,6 +18,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # runPluginVerifier downloads full IDE distributions for every plugin; the default runner
+      # disk fills and the job dies with "No space left on device". Reclaim space up front.
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL \
+                      /usr/local/share/boost /usr/local/.ghcup /usr/share/swift || true
+          sudo docker image prune --all --force || true
+          sudo swapoff -a || true; sudo rm -f /mnt/swapfile || true
+          df -h /
+
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
@@ -33,9 +43,15 @@ jobs:
       - name: Verify, check deprecated API & build every plugin
         run: |
           set -e
+          mkdir -p dist
           for dir in plugins/*/; do
             name=$(basename "$dir")
             ./gradlew ":plugins:${name}:verifyPlugin" ":plugins:${name}:runPluginVerifier" ":plugins:${name}:buildPlugin" --stacktrace
+            # Stash the zip, then drop this plugin's build output so the sandbox/artifacts of all
+            # plugins don't accumulate and fill the runner disk mid-loop.
+            cp "plugins/${name}/build/distributions/"*.zip dist/ 2>/dev/null || true
+            rm -rf "plugins/${name}/build"
+            df -h / | tail -1
           done
 
       - name: Upload plugin distributions
@@ -43,5 +59,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: plugin-distributions
-          path: plugins/*/build/distributions/*.zip
+          path: dist/*.zip
           retention-days: 5
