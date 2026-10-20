@@ -7,6 +7,7 @@ import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextArea
 import com.intellij.util.ui.JBUI
+import io.github.vadimtoptunov.kassitestdata.codec.Bech32
 import io.github.vadimtoptunov.kassitestdata.codec.Codec
 import java.awt.BorderLayout
 import java.awt.FlowLayout
@@ -63,6 +64,7 @@ class CodecToolkitPanel : JPanel(BorderLayout()) {
             add(fromCombo)
             add(JBLabel("To"))
             add(toCombo)
+            add(JButton("Decode SegWit / Bech32").apply { addActionListener { decodeBech32() } })
             add(JButton("Copy").apply { addActionListener { copyOutput() } })
         }
 
@@ -99,6 +101,32 @@ class CodecToolkitPanel : JPanel(BorderLayout()) {
             "⚠ Not valid $from input."
         } else {
             to.encode(bytes)
+        }
+    }
+
+    /** Decode the Input as a Bech32/Bech32m string, breaking out a SegWit address's parts when it is one. */
+    private fun decodeBech32() {
+        val s = input.text.trim()
+        if (s.isEmpty()) {
+            output.text = ""
+            return
+        }
+        val seg = Bech32.decodeSegwit(s)
+        if (seg != null) {
+            output.text = buildString {
+                append("SegWit address\n")
+                append("HRP: ${seg.hrp}\n")
+                append("Witness version: ${seg.witnessVersion}\n")
+                append("Program (hex): ${Codec.hexEncode(seg.program)}\n")
+                append("Encoding: ${if (seg.witnessVersion == 0) "Bech32" else "Bech32m"}")
+            }
+            return
+        }
+        val d = Bech32.decode(s)
+        output.text = if (d != null) {
+            "Bech32 string\nHRP: ${d.hrp}\nData: ${d.data.size} 5-bit group(s)\nEncoding: ${if (d.variant == Bech32.Variant.BECH32) "Bech32" else "Bech32m"}"
+        } else {
+            "⚠ Not a valid Bech32 / SegWit string."
         }
     }
 
