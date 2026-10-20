@@ -39,5 +39,6 @@ class AnonymizePiiAction : AnAction() {
                 document.setText(result.text)
             }
         }, )
+        reviewPrompt.recordUse(project)
     }
 }

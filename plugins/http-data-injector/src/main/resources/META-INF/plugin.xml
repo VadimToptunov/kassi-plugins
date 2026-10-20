@@ -32,6 +32,7 @@
     ]]></description>
 
     <change-notes><![CDATA[
+    <h3>1.4.0</h3><ul><li>Asks once for a Marketplace review after you have used the plugin for a while — a plain, dismissable notification with "Don't ask again". Nothing else changes.</li></ul>
     <h3>1.3.0</h3>
     <ul><li>New data types: opaque <b>identifiers</b> — <b>UUID v4</b>, <b>UUID v7</b>, <b>ULID</b> and <b>NanoID</b> — for resource IDs and idempotency keys, insertable straight into a <code>.http</code> request body or header.</li></ul>
     <h3>1.2.0</h3>
@@ -55,6 +56,7 @@
     <depends>com.intellij.modules.platform</depends>
 
     <extensions defaultExtensionNs="com.intellij">
+        <notificationGroup id="Kassi HTTP Data Injector" displayType="BALLOON"/>
         <intentionAction>
             <className>io.github.vadimtoptunov.httpdatainjector.intention.InsertHttpTestDataIntention</className>
             <category>Kassi HTTP test data</category>

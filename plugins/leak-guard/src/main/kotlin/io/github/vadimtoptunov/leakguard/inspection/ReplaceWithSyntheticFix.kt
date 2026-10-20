@@ -30,5 +30,6 @@ class ReplaceWithSyntheticFix(
             document.replaceString(range.startOffset, range.endOffset, replacement)
             PsiDocumentManager.getInstance(project).commitDocument(document)
         }, file)
+        reviewPrompt.recordUse(project)
     }
 }

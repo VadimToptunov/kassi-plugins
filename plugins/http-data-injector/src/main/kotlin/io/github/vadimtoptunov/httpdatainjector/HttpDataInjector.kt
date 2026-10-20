@@ -35,6 +35,7 @@ object HttpDataInjector {
                 WriteCommandAction.runWriteCommandAction(project) {
                     insertAtCaret(editor, item.produce(null))
                 }
+                reviewPrompt.recordUse(project)
             }
             .createPopup()
             .showInBestPositionFor(editor)

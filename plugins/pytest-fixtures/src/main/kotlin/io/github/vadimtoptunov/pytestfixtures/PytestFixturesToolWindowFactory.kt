@@ -9,6 +9,7 @@ import com.intellij.ui.content.ContentFactory
 class PytestFixturesToolWindowFactory : ToolWindowFactory {
 
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
+        reviewPrompt.recordUse(project)
         val content = ContentFactory.getInstance().createContent(PytestFixturesPanel(), "", false)
         toolWindow.contentManager.addContent(content)
     }

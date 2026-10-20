@@ -25,11 +25,16 @@
     ]]></description>
 
     <change-notes><![CDATA[
+    <h3>1.1.0</h3><ul><li>Asks once for a Marketplace review after you have used the plugin for a while — a plain, dismissable notification with "Don't ask again". Nothing else changes.</li></ul>
     <h3>1.0.0</h3>
     <ul><li>First release: an editor action that replaces card / IBAN / US SSN / email PII with valid-synthetic, checksum-passing, coherent replacements — on a selection or the whole file.</li></ul>
     ]]></change-notes>
 
     <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <notificationGroup id="Kassi PII Anonymizer" displayType="BALLOON"/>
+    </extensions>
 
     <actions>
         <action id="kassi.AnonymizePii"
