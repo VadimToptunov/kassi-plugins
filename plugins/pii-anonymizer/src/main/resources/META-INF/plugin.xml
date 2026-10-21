@@ -21,6 +21,10 @@
     <p><b>Usage:</b> right-click in the editor → <b>Anonymize PII (Kassi)</b>, on a selection or the whole
     file. Platform-only — installs in every IntelliJ-based IDE. A companion to
     <a href="https://plugins.jetbrains.com/plugin/33149">Kassi Test Data</a> and the Secret &amp; Card Leak Guard.</p>
+    <p><b>More from the Kassi QA &amp; fintech toolkit:</b></p>
+    <p><b>Spec-valid test data:</b> <a href="https://plugins.jetbrains.com/plugin/33149">Kassi Test Data</a> · <a href="https://plugins.jetbrains.com/plugin/34869">Go Test Data</a> · <a href="https://plugins.jetbrains.com/plugin/34834">pytest Fixtures</a> · <a href="https://plugins.jetbrains.com/plugin/33488">UUID / ULID / NanoID Toolkit</a> · <a href="https://plugins.jetbrains.com/plugin/33967">HTTP Data Injector</a> · <a href="https://plugins.jetbrains.com/plugin/35316">SQL Synthetic Seeder</a></p>
+    <p><b>Fintech &amp; validators:</b> <a href="https://plugins.jetbrains.com/plugin/33227">Checksum &amp; Regex Playground</a> · <a href="https://plugins.jetbrains.com/plugin/34673">ACH / NACHA Toolkit</a> · <a href="https://plugins.jetbrains.com/plugin/33419">ISO 8583 Inspector</a> · <a href="https://plugins.jetbrains.com/plugin/33836">SWIFT MT &amp; ISO 20022 Validator</a> · <a href="https://plugins.jetbrains.com/plugin/35290">Crypto Codec Toolkit</a></p>
+    <p><b>QA &amp; testing:</b> <a href="https://plugins.jetbrains.com/plugin/33849">Flaky Test Linter</a> · <a href="https://plugins.jetbrains.com/plugin/34235">Compose Testability Linter</a> · <a href="https://plugins.jetbrains.com/plugin/33325">MRZ &amp; Barcode Inspector</a> · <a href="https://plugins.jetbrains.com/plugin/34133">Secret &amp; Card Leak Guard</a> · <a href="https://plugins.jetbrains.com/plugin/33990">Robot Framework Pro</a> · <a href="https://plugins.jetbrains.com/plugin/33588">dbt Navigator</a></p>
     <p><b>Source, issues &amp; docs:</b> <a href="https://github.com/VadimToptunov/kassi-plugins">github.com/VadimToptunov/kassi-plugins</a></p>
     ]]></description>
 
