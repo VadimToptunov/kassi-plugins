@@ -15,3 +15,4 @@ include(":plugins:codec-toolkit")
 
 include(":plugins:dotnet-testdata")
 include(":plugins:ts-testdata")
+include(":plugins:php-testdata")
