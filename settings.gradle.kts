@@ -13,4 +13,5 @@ include(":plugins:sql-seeder")
 include(":plugins:nacha-toolkit")
 include(":plugins:codec-toolkit")
 
+include(":plugins:dotnet-testdata")
 include(":plugins:ts-testdata")
