@@ -43,6 +43,9 @@ object LeakGuard {
         SENDGRID_API_KEY("SendGrid API key", synthetic = false),
         MAILGUN_API_KEY("Mailgun API key", synthetic = false),
         MAILCHIMP_API_KEY("Mailchimp API key", synthetic = false),
+        GITHUB_FINE_GRAINED_PAT("GitHub fine-grained personal access token", synthetic = false),
+        SHOPIFY_TOKEN("Shopify access token", synthetic = false),
+        DIGITALOCEAN_TOKEN("DigitalOcean personal access token", synthetic = false),
     }
 
     data class Finding(val kind: Kind, val range: IntRange, val matched: String, val replacement: String)
@@ -85,6 +88,12 @@ object LeakGuard {
     private val MAILGUN_API_KEY = Regex("""\bkey-[0-9a-f]{32}\b""")
     // Mailchimp API key: documented 32 hex characters + "-us" + datacenter number.
     private val MAILCHIMP_API_KEY = Regex("""\b[0-9a-f]{32}-us\d{1,2}\b""")
+    // GitHub fine-grained PAT: documented github_pat_ prefix + 82 base62/underscore characters.
+    private val GITHUB_FINE_GRAINED_PAT = Regex("""\bgithub_pat_[A-Za-z0-9_]{82}\b""")
+    // Shopify access token: documented shpat_/shpca_/shppa_/shpss_ prefix + 32 hex characters.
+    private val SHOPIFY_TOKEN = Regex("""\bshp(?:at|ca|pa|ss)_[0-9a-fA-F]{32}\b""")
+    // DigitalOcean PAT: documented dop_v1_ prefix + 64 hex characters.
+    private val DIGITALOCEAN_TOKEN = Regex("""\bdop_v1_[0-9a-f]{64}\b""")
 
     fun scan(text: String): List<Finding> =
         (scanIbans(text) + scanPans(text) + scanSsns(text) + scanSecrets(text)).sortedBy { it.range.first }
@@ -105,6 +114,9 @@ object LeakGuard {
         SENDGRID_API_KEY.findAll(text).forEach { add(Finding(Kind.SENDGRID_API_KEY, it.range, it.value, "REDACTED_SENDGRID_API_KEY")) }
         MAILGUN_API_KEY.findAll(text).forEach { add(Finding(Kind.MAILGUN_API_KEY, it.range, it.value, "REDACTED_MAILGUN_API_KEY")) }
         MAILCHIMP_API_KEY.findAll(text).forEach { add(Finding(Kind.MAILCHIMP_API_KEY, it.range, it.value, "REDACTED_MAILCHIMP_API_KEY")) }
+        GITHUB_FINE_GRAINED_PAT.findAll(text).forEach { add(Finding(Kind.GITHUB_FINE_GRAINED_PAT, it.range, it.value, "REDACTED_GITHUB_PAT")) }
+        SHOPIFY_TOKEN.findAll(text).forEach { add(Finding(Kind.SHOPIFY_TOKEN, it.range, it.value, "REDACTED_SHOPIFY_TOKEN")) }
+        DIGITALOCEAN_TOKEN.findAll(text).forEach { add(Finding(Kind.DIGITALOCEAN_TOKEN, it.range, it.value, "REDACTED_DIGITALOCEAN_TOKEN")) }
     }
 
     private fun scanIbans(text: String): List<Finding> = IBAN_CANDIDATE.findAll(text).mapNotNull { m ->
