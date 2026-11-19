@@ -19,6 +19,9 @@
       totals and entry hash) and a deliberately <b>invalid</b> variant for negative tests, then copy it.</li>
       <li><b>Routing numbers</b> — the ABA routing-transit check digit (weights 3-7-1, mod 10) is the
       same check real Federal Reserve routing numbers pass; generate valid ones or verify your own.</li>
+      <li><b>Return reason codes</b> — when a file carries return addenda (type-99 records), validation
+      lists each return with its <b>reason code and meaning</b> (<code>R01 — Insufficient Funds</code>,
+      <code>R02 — Account Closed</code>, …) from the Nacha Operating Rules, and flags a malformed code.</li>
     </ul>
     <p>Open it from <b>View ▸ Tool Windows ▸ ACH / NACHA</b>. Fully offline and deterministic — the same
     validated engine behind the Kassi fintech tools.</p>
@@ -30,6 +33,7 @@
     ]]></description>
 
     <change-notes><![CDATA[
+    <h3>1.4.0</h3><ul><li><b>Return reason codes:</b> validating a file that carries <b>return addenda</b> (type-99 records) now lists each return with its reason code and published meaning — <code>R01 — Insufficient Funds</code>, <code>R02 — Account Closed</code>, <code>R03 — No Account/Unable to Locate Account</code>, … — from the administrative return block (R01–R33) of the Nacha Operating Rules &amp; Guidelines. A return reason code that isn't "R" plus two digits is flagged as malformed. Offline, as always.</li></ul>
     <h3>1.3.0</h3><ul><li>Asks once for a Marketplace review after you have used the plugin for a while — a plain, dismissable notification with "Don't ask again". Nothing else changes.</li></ul>
     <h3>1.2.0</h3><ul><li>Pick the <b>Standard Entry Class</b> for generated samples: <b>PPD</b>, <b>CCD</b>, <b>WEB</b> or <b>TEL</b>. The SEC code is written into the batch-header record and the file still validates.</li></ul>
     <h3>1.1.0</h3><ul><li><b>Addenda records (type 7)</b>: generated sample files now carry a payment-related addenda (type code 05) on an entry — with the entry's addenda indicator set and the batch/file entry+addenda counts updated — and validation recognises type-7 records, checks their addenda type code, and includes them in the control-total count.</li></ul>
