@@ -63,6 +63,7 @@ class NachaToolkitPanel : JPanel(BorderLayout()) {
         }
         val problems = Nacha.validate(text)
         val returns = Nacha.returns(text)
+        val nocs = Nacha.changeNotifications(text)
         resultArea.text = buildString {
             if (problems.isEmpty()) {
                 append("✔ Valid NACHA file — no structural problems found.")
@@ -76,6 +77,12 @@ class NachaToolkitPanel : JPanel(BorderLayout()) {
                 append("\n\n${returns.size} return(s):\n")
                 returns.forEach { r ->
                     append("  Line ${r.line}: ${r.code} — ${r.meaning ?: "unknown return reason code"}\n")
+                }
+            }
+            if (nocs.isNotEmpty()) {
+                append("\n\n${nocs.size} notification(s) of change:\n")
+                nocs.forEach { n ->
+                    append("  Line ${n.line}: ${n.code} — ${n.meaning ?: "unknown change code"}\n")
                 }
             }
         }

@@ -155,4 +155,42 @@ class NachaTest {
         val problems = Nacha.validate(lines.joinToString("\n"))
         assertTrue(problems.any { it.message.contains("reason code 'RX1' is malformed") }, "got $problems")
     }
+
+    @Test
+    fun `NOC change codes map to their published Nacha meanings`() {
+        // EXTERNAL anchor: the Notification of Change / COR Change Code block (C01–C14) from the Nacha
+        // Operating Rules & Guidelines — code and official description as published by Nacha.
+        assertEquals("Incorrect DFI Account Number", Nacha.CHANGE_CODES["C01"])
+        assertEquals("Incorrect Routing Number", Nacha.CHANGE_CODES["C02"])
+        assertEquals("Incorrect Transaction Code", Nacha.CHANGE_CODES["C05"])
+        assertEquals("Addenda Format Error", Nacha.CHANGE_CODES["C13"])
+        assertEquals("Incorrect SEC Code for Outbound International Payment", Nacha.CHANGE_CODES["C14"])
+        assertEquals(14, Nacha.CHANGE_CODES.size, "the C01–C14 change-code block")
+    }
+
+    @Test
+    fun `changeNotifications() recovers each NOC addenda's change code and meaning`() {
+        val file = Nacha.sampleFile(Rng(3L), valid = true)
+        val lines = file.split("\n").toMutableList()
+        val addendaIdx = lines.indexOfFirst { it[0] == '7' }
+        // Turn the sample's type-05 addenda into a type-98 NOC carrying change code C02.
+        lines[addendaIdx] = splice(splice(lines[addendaIdx], 1..2, "98"), 3..5, "C02")
+        val nocs = Nacha.changeNotifications(lines.joinToString("\n"))
+        assertEquals(1, nocs.size)
+        assertEquals("C02", nocs[0].code)
+        assertEquals("Incorrect Routing Number", nocs[0].meaning)
+        assertEquals(addendaIdx + 1, nocs[0].line)
+        assertTrue(Nacha.validate(lines.joinToString("\n")).none { it.message.contains("change code") })
+    }
+
+    @Test
+    fun `a malformed NOC change code is flagged`() {
+        val file = Nacha.sampleFile(Rng(3L), valid = true)
+        val lines = file.split("\n").toMutableList()
+        val addendaIdx = lines.indexOfFirst { it[0] == '7' }
+        // Type-98 NOC addenda whose change code "CX2" is not C + two digits.
+        lines[addendaIdx] = splice(splice(lines[addendaIdx], 1..2, "98"), 3..5, "CX2")
+        val problems = Nacha.validate(lines.joinToString("\n"))
+        assertTrue(problems.any { it.message.contains("change code 'CX2' is malformed") }, "got $problems")
+    }
 }
