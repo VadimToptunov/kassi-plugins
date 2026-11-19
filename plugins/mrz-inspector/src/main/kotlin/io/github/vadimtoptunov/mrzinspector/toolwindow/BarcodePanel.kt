@@ -59,7 +59,8 @@ class BarcodePanel : JPanel(BorderLayout()) {
             for (field in subfile.fields) {
                 val name = AamvaInspector.elementName(field.elementId)
                 val label = if (name != null) "${field.elementId} (${name})" else field.elementId
-                appendLine("  $label: ${field.value}")
+                val decoded = AamvaInspector.decodeValue(field.elementId, field.value)?.let { " — $it" } ?: ""
+                appendLine("  $label: ${field.value}$decoded")
             }
         }
         val missing = AamvaInspector.missingMandatoryElements(r)

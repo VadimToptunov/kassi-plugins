@@ -92,6 +92,20 @@ class AamvaInspectorTest {
     }
 
     @Test
+    fun `coded element values decode to their published AAMVA meanings`() {
+        // EXTERNAL anchor: AAMVA DL/ID Card Design Standard coded-value tables (sex, eye/hair colour).
+        assertEquals("Male", AamvaInspector.decodeValue("DBC", "1"))
+        assertEquals("Female", AamvaInspector.decodeValue("DBC", "2"))
+        assertEquals("Not specified", AamvaInspector.decodeValue("DBC", "9"))
+        assertEquals("Brown", AamvaInspector.decodeValue("DAY", "BRO")) // eye colour
+        assertEquals("Blond", AamvaInspector.decodeValue("DAZ", "BLN")) // hair colour
+        assertEquals("Hazel", AamvaInspector.decodeValue("DAY", "HAZ"))
+        // Uncoded element, or a value outside the table, decodes to null (shown raw).
+        assertEquals(null, AamvaInspector.decodeValue("DAC", "JOHN"))
+        assertEquals(null, AamvaInspector.decodeValue("DBC", "7"))
+    }
+
+    @Test
     fun `data-element ids map to their published AAMVA names`() {
         // EXTERNAL anchor: data-element identifiers and names from the AAMVA DL/ID Card Design Standard
         // (Annex D data-element dictionary).

@@ -92,6 +92,30 @@ object AamvaInspector {
         val present = dl.fields.mapTo(HashSet()) { it.elementId }
         return MANDATORY_DL_ELEMENTS.filter { it !in present }
     }
+
+    // AAMVA DL/ID Card Design Standard coded-value tables (Annex D): sex (ISO/IEC 5218), eye and hair
+    // colour. The exact code→meaning strings are the external published reference (see the unit test).
+    private val SEX_CODES = mapOf("1" to "Male", "2" to "Female", "9" to "Not specified")
+    private val EYE_COLOUR_CODES = mapOf(
+        "BLK" to "Black", "BLU" to "Blue", "BRO" to "Brown", "GRY" to "Gray", "GRN" to "Green",
+        "HAZ" to "Hazel", "MAR" to "Maroon", "PNK" to "Pink", "DIC" to "Dichromatic", "UNK" to "Unknown",
+    )
+    private val HAIR_COLOUR_CODES = mapOf(
+        "BAL" to "Bald", "BLK" to "Black", "BLN" to "Blond", "BRO" to "Brown", "GRY" to "Gray",
+        "RED" to "Red/Auburn", "SDY" to "Sandy", "WHI" to "White", "UNK" to "Unknown",
+    )
+
+    /**
+     * Human-readable decoding of a coded element [value] for the coded fields DBC (sex), DAY (eye
+     * colour) and DAZ (hair colour), per the AAMVA code tables. Null for an uncoded element or a value
+     * outside the table — callers then show the raw value unchanged.
+     */
+    fun decodeValue(elementId: String, value: String): String? = when (elementId) {
+        "DBC" -> SEX_CODES[value.trim()]
+        "DAY" -> EYE_COLOUR_CODES[value.trim().uppercase()]
+        "DAZ" -> HAIR_COLOUR_CODES[value.trim().uppercase()]
+        else -> null
+    }
     data class AamvaResult(
         val iin: String,
         val aamvaVersion: String,
