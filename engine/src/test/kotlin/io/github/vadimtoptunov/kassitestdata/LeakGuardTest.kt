@@ -132,10 +132,39 @@ class LeakGuardTest {
     }
 
     @Test
+    fun `secret detectors flag OpenAI, Anthropic and Hugging Face keys with a redaction fix`() {
+        // Tokens assembled from fragments so no full literal sits in source; each matches its
+        // provider-documented format.
+        // Anthropic — documented sk-ant- prefix (scanned before OpenAI; the sk- forms are mutually exclusive).
+        val anthropic = LeakGuard.scan("ANTHROPIC_API_KEY=" + "sk-ant-" + "api03-aBcD1234_efGH5678-ijKL").single()
+        assertEquals(LeakGuard.Kind.ANTHROPIC_API_KEY, anthropic.kind)
+        assertEquals(false, anthropic.kind.synthetic)
+        assertTrue(LeakGuard.scan(anthropic.replacement).isEmpty(), "the redaction placeholder must not re-flag")
+
+        // OpenAI — documented project-scoped sk-proj- form.
+        assertEquals(
+            LeakGuard.Kind.OPENAI_API_KEY,
+            LeakGuard.scan("OPENAI_API_KEY=" + "sk-proj-" + "abcdefghijklmnopqrstuvwxyz0123").single().kind,
+        )
+        // OpenAI — legacy sk- + 48 base62 form.
+        assertEquals(
+            LeakGuard.Kind.OPENAI_API_KEY,
+            LeakGuard.scan("key " + "sk-" + "A".repeat(48)).single().kind,
+        )
+
+        // Hugging Face — documented hf_ prefix + 34 base62 chars.
+        assertEquals(
+            LeakGuard.Kind.HUGGINGFACE_TOKEN,
+            LeakGuard.scan("HF_TOKEN=" + "hf_" + "abcdefghijklmnopqrstuvwxyz01234567").single().kind,
+        )
+    }
+
+    @Test
     fun `secret detectors do not fire on lookalike non-secrets`() {
         assertTrue(LeakGuard.scan("prefix AKIA123 short and AKIALOWERcase0000000 nope").isEmpty()) // too short / lowercase
         assertTrue(LeakGuard.scan("not a jwt: eyJonly.one").isEmpty())
         assertTrue(LeakGuard.scan("gitlab: glpat-tooshort and npm_too_short").isEmpty())        // wrong lengths
+        assertTrue(LeakGuard.scan("ai keys: sk-proj-short and hf_tooShort and sk-ant-x").isEmpty()) // wrong lengths
     }
 
     @Test

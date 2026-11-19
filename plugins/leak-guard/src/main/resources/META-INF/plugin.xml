@@ -16,8 +16,11 @@
       <li><b>IBAN</b> — passes the ISO 7064 mod-97 check, but isn't one of Kassi's own reserved test IBANs.</li>
       <li><b>US SSN</b> — structurally issuable (area/group/serial outside the SSA's never-issued ranges),
       so it could plausibly be assigned to a real person.</li>
-      <li><b>Secrets</b> — an <b>AWS access key ID</b> (<code>AKIA…</code>), a <b>JWT</b>, or a <b>PEM
-      private-key</b> block — high-precision patterns that shouldn't sit in a repo.</li>
+      <li><b>Secrets</b> — high-precision patterns that shouldn't sit in a repo: <b>AWS access key ID</b>
+      (<code>AKIA…</code>), <b>JWT</b>, <b>PEM private-key</b> block, <b>GitHub</b>/<b>GitLab</b> tokens,
+      <b>Stripe</b> live key, <b>Google API key</b>, <b>Slack</b>/<b>npm</b> tokens, and the major
+      <b>AI provider keys</b> — <b>OpenAI</b> (<code>sk-proj-…</code>), <b>Anthropic</b>
+      (<code>sk-ant-…</code>) and <b>Hugging Face</b> (<code>hf_…</code>).</li>
     </ul>
     <p>
     Financial/PII findings offer a one-click <b>replace with a synthetic, checksum-valid equivalent</b>
@@ -35,6 +38,7 @@
     ]]></description>
 
     <change-notes><![CDATA[
+    <h3>1.6.0</h3><ul><li>Three more high-precision secret detectors for the major AI providers: <b>OpenAI API key</b> (<code>sk-proj-…</code>, plus the legacy <code>sk-</code> + 48-char form), <b>Anthropic API key</b> (<code>sk-ant-…</code>), and <b>Hugging Face access token</b> (<code>hf_…</code>) — each with a one-click redact fix. Patterns follow each provider's documented token format.</li></ul>
     <h3>1.5.0</h3><ul><li>Asks once for a Marketplace review after you have used the plugin for a while — a plain, dismissable notification with "Don't ask again". Nothing else changes.</li></ul>
     <h3>1.4.0</h3><ul><li>Three more high-precision secret detectors: <b>Slack token</b> (<code>xoxb-</code>/<code>xoxp-</code>…), <b>GitLab personal access token</b> (<code>glpat-</code>), and <b>npm access token</b> (<code>npm_</code>) — each with a one-click redact fix.</li></ul>
     <h3>1.3.0</h3><ul><li>Three more high-precision secret detectors: <b>GitHub token</b> (<code>ghp_</code>/<code>gho_</code>…), <b>Stripe live secret key</b> (<code>sk_live_</code>/<code>rk_live_</code> — safe <code>sk_test_</code> keys are deliberately ignored), and <b>Google API key</b> (<code>AIza…</code>) — each with a one-click redact fix.</li></ul>
