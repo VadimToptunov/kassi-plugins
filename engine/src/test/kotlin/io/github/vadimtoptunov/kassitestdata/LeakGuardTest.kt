@@ -181,12 +181,34 @@ class LeakGuardTest {
     }
 
     @Test
+    fun `secret detectors flag GitHub fine-grained PAT, Shopify and DigitalOcean tokens with a redaction fix`() {
+        // Fragment-assembled; each matches its provider-documented format.
+        // GitHub fine-grained PAT — documented github_pat_ prefix + 82 chars.
+        val ghPat = LeakGuard.scan("GH_PAT=" + "github" + "_pat_" + "A".repeat(82)).single()
+        assertEquals(LeakGuard.Kind.GITHUB_FINE_GRAINED_PAT, ghPat.kind)
+        assertEquals(false, ghPat.kind.synthetic)
+        assertTrue(LeakGuard.scan(ghPat.replacement).isEmpty(), "the redaction placeholder must not re-flag")
+
+        // Shopify — documented shpat_ prefix + 32 hex.
+        assertEquals(
+            LeakGuard.Kind.SHOPIFY_TOKEN,
+            LeakGuard.scan("SHOPIFY=" + "shp" + "at_" + "0123456789abcdef".repeat(2)).single().kind,
+        )
+        // DigitalOcean — documented dop_v1_ prefix + 64 hex.
+        assertEquals(
+            LeakGuard.Kind.DIGITALOCEAN_TOKEN,
+            LeakGuard.scan("DO_TOKEN=" + "dop" + "_v1_" + "0123456789abcdef".repeat(4)).single().kind,
+        )
+    }
+
+    @Test
     fun `secret detectors do not fire on lookalike non-secrets`() {
         assertTrue(LeakGuard.scan("prefix AKIA123 short and AKIALOWERcase0000000 nope").isEmpty()) // too short / lowercase
         assertTrue(LeakGuard.scan("not a jwt: eyJonly.one").isEmpty())
         assertTrue(LeakGuard.scan("gitlab: glpat-tooshort and npm_too_short").isEmpty())        // wrong lengths
         assertTrue(LeakGuard.scan("ai keys: sk-proj-short and hf_tooShort and sk-ant-x").isEmpty()) // wrong lengths
         assertTrue(LeakGuard.scan("mail: SG.short.x and key-00 and abcdef-us1").isEmpty())       // wrong lengths
+        assertTrue(LeakGuard.scan("plat: github_pat_short and shpat_short and dop_v1_short").isEmpty()) // wrong lengths
     }
 
     @Test

@@ -22,7 +22,9 @@
       <b>AI provider keys</b> — <b>OpenAI</b> (<code>sk-proj-…</code>), <b>Anthropic</b>
       (<code>sk-ant-…</code>) and <b>Hugging Face</b> (<code>hf_…</code>) — and <b>email/marketing
       keys</b> — <b>SendGrid</b> (<code>SG.…</code>), <b>Mailgun</b> (<code>key-…</code>) and
-      <b>Mailchimp</b> (<code>…-us<i>N</i></code>).</li>
+      <b>Mailchimp</b> (<code>…-us<i>N</i></code>) — and <b>platform tokens</b> — <b>GitHub</b>
+      fine-grained PAT (<code>github_pat_…</code>), <b>Shopify</b> (<code>shpat_…</code>) and
+      <b>DigitalOcean</b> (<code>dop_v1_…</code>).</li>
     </ul>
     <p>
     Financial/PII findings offer a one-click <b>replace with a synthetic, checksum-valid equivalent</b>
@@ -40,6 +42,7 @@
     ]]></description>
 
     <change-notes><![CDATA[
+    <h3>1.8.0</h3><ul><li>Three more high-precision secret detectors for developer platforms: <b>GitHub fine-grained PAT</b> (<code>github_pat_…</code>), <b>Shopify access token</b> (<code>shpat_…</code>), and <b>DigitalOcean PAT</b> (<code>dop_v1_…</code>) — each with a one-click redact fix. Patterns follow each provider's documented token format.</li></ul>
     <h3>1.7.0</h3><ul><li>Three more high-precision secret detectors for email/marketing providers: <b>SendGrid API key</b> (<code>SG.…</code>), <b>Mailgun API key</b> (<code>key-…</code>), and <b>Mailchimp API key</b> (<code>…-us<i>N</i></code>) — each with a one-click redact fix. Patterns follow each provider's documented key format.</li></ul>
     <h3>1.6.0</h3><ul><li>Three more high-precision secret detectors for the major AI providers: <b>OpenAI API key</b> (<code>sk-proj-…</code>, plus the legacy <code>sk-</code> + 48-char form), <b>Anthropic API key</b> (<code>sk-ant-…</code>), and <b>Hugging Face access token</b> (<code>hf_…</code>) — each with a one-click redact fix. Patterns follow each provider's documented token format.</li></ul>
     <h3>1.5.0</h3><ul><li>Asks once for a Marketplace review after you have used the plugin for a while — a plain, dismissable notification with "Don't ask again". Nothing else changes.</li></ul>
