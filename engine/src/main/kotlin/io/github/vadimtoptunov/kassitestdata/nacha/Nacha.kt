@@ -65,6 +65,66 @@ object Nacha {
     // 98 (notification of change), 99 (return).
     private val ADDENDA_TYPE_CODES = setOf("02", "05", "98", "99")
 
+    /**
+     * ACH Return Reason Codes (the administrative-return block R01–R33), code → published meaning, from
+     * the Nacha Operating Rules & Guidelines. A return is carried as a type-7 addenda with addenda type
+     * code 99; its 3-character return reason code sits in positions 4–6 of that record. This dictionary
+     * explains a return file — the exact strings are the external published reference (see the unit test).
+     */
+    val RETURN_REASON_CODES: Map<String, String> = linkedMapOf(
+        "R01" to "Insufficient Funds",
+        "R02" to "Account Closed",
+        "R03" to "No Account/Unable to Locate Account",
+        "R04" to "Invalid Account Number Structure",
+        "R05" to "Unauthorized Debit to Consumer Account Using Corporate SEC Code",
+        "R06" to "Returned per ODFI's Request",
+        "R07" to "Authorization Revoked by Customer",
+        "R08" to "Payment Stopped",
+        "R09" to "Uncollected Funds",
+        "R10" to "Customer Advises Originator is Not Known to Receiver and/or Is Not Authorized",
+        "R11" to "Customer Advises Entry Not in Accordance with the Terms of the Authorization",
+        "R12" to "Branch Sold to Another DFI",
+        "R13" to "RDFI Not Qualified to Participate",
+        "R14" to "Representative Payee Deceased or Unable to Continue in that Capacity",
+        "R15" to "Beneficiary or Account Holder Deceased",
+        "R16" to "Account Frozen/Entry Returned per OFAC Instruction",
+        "R17" to "File Record Edit Criteria",
+        "R18" to "Improper Effective Entry Date",
+        "R19" to "Amount Field Error",
+        "R20" to "Non-Transaction Account",
+        "R21" to "Invalid Company Identification",
+        "R22" to "Invalid Individual ID Number",
+        "R23" to "Credit Entry Refused by Receiver",
+        "R24" to "Duplicate Entry",
+        "R25" to "Addenda Error",
+        "R26" to "Mandatory Field Error",
+        "R27" to "Trace Number Error",
+        "R28" to "Routing Number Check Digit Error",
+        "R29" to "Corporate Customer Advises Not Authorized",
+        "R30" to "RDFI Not Participant in Check Truncation Program",
+        "R31" to "Permissible Return Entry (CCD and CTX only)",
+        "R32" to "RDFI Non-Settlement",
+        "R33" to "Return of XCK Entry",
+    )
+
+    /** One return found in a file: the 1-based [line], the [code] (e.g. "R01") and its meaning, if known. */
+    data class Return(val line: Int, val code: String, val meaning: String?)
+
+    /**
+     * Scan a file for return addenda (type-7 records with addenda type code 99) and report each return's
+     * reason code and published meaning. Empty when the file carries no returns.
+     */
+    fun returns(text: String): List<Return> {
+        val out = ArrayList<Return>()
+        text.split("\n").filter { it.isNotEmpty() }.forEachIndexed { i, line ->
+            if (line.length == W && line[0] == '7' && line.substring(1, 3) == "99") {
+                val code = line.substring(3, 6).trim().uppercase()
+                out += Return(i + 1, code, RETURN_REASON_CODES[code])
+            }
+        }
+        return out
+    }
+
     // ---- Generation ----------------------------------------------------------------------------
 
     /**
@@ -283,6 +343,12 @@ object Nacha {
             val addendaType = line.substring(1, 3)
             if (addendaType !in ADDENDA_TYPE_CODES) {
                 problems += Problem(idx + 1, "Addenda type code '$addendaType' is not a recognised NACHA code.")
+            } else if (addendaType == "99") {
+                // A return addenda (type 99) carries a 3-char return reason code in positions 4-6.
+                val code = line.substring(3, 6).uppercase()
+                if (!Regex("^R\\d\\d$").matches(code)) {
+                    problems += Problem(idx + 1, "Return addenda reason code '$code' is malformed (expected 'R' and two digits).")
+                }
             }
         }
         val entryAddendaCount = (entryLines.size + addendaLines.size).toLong()

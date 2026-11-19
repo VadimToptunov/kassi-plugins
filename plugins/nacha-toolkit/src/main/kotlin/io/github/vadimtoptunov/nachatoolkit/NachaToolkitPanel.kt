@@ -62,13 +62,20 @@ class NachaToolkitPanel : JPanel(BorderLayout()) {
             return
         }
         val problems = Nacha.validate(text)
-        resultArea.text = if (problems.isEmpty()) {
-            "✔ Valid NACHA file — no structural problems found."
-        } else {
-            buildString {
+        val returns = Nacha.returns(text)
+        resultArea.text = buildString {
+            if (problems.isEmpty()) {
+                append("✔ Valid NACHA file — no structural problems found.")
+            } else {
                 append("✘ ${problems.size} problem(s):\n")
                 problems.forEach { p ->
                     if (p.line > 0) append("  Line ${p.line}: ${p.message}\n") else append("  ${p.message}\n")
+                }
+            }
+            if (returns.isNotEmpty()) {
+                append("\n\n${returns.size} return(s):\n")
+                returns.forEach { r ->
+                    append("  Line ${r.line}: ${r.code} — ${r.meaning ?: "unknown return reason code"}\n")
                 }
             }
         }

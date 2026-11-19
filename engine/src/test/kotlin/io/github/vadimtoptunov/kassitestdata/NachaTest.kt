@@ -112,4 +112,47 @@ class NachaTest {
         val problems = Nacha.validate(lines.joinToString("\n"))
         assertTrue(problems.any { it.message.contains("Addenda type code") }, "expected an addenda problem, got $problems")
     }
+
+    @Test
+    fun `return reason codes map to their published Nacha meanings`() {
+        // EXTERNAL anchor: the administrative Return Reason Code block (R01–R33) from the Nacha Operating
+        // Rules & Guidelines — code and official description as published by Nacha.
+        assertEquals("Insufficient Funds", Nacha.RETURN_REASON_CODES["R01"])
+        assertEquals("Account Closed", Nacha.RETURN_REASON_CODES["R02"])
+        assertEquals("No Account/Unable to Locate Account", Nacha.RETURN_REASON_CODES["R03"])
+        assertEquals("Account Frozen/Entry Returned per OFAC Instruction", Nacha.RETURN_REASON_CODES["R16"])
+        assertEquals("Return of XCK Entry", Nacha.RETURN_REASON_CODES["R33"])
+        assertEquals(33, Nacha.RETURN_REASON_CODES.size, "the R01–R33 administrative block")
+    }
+
+    /** Rewrite [line]'s [range] (0-based) with [value], keeping the record exactly 94 chars. */
+    private fun splice(line: String, range: IntRange, value: String): String =
+        line.substring(0, range.first) + value + line.substring(range.last + 1)
+
+    @Test
+    fun `returns() recovers each return addenda's reason code and meaning`() {
+        val file = Nacha.sampleFile(Rng(3L), valid = true)
+        val lines = file.split("\n").toMutableList()
+        val addendaIdx = lines.indexOfFirst { it[0] == '7' }
+        // Turn the sample's type-05 addenda into a type-99 return carrying reason code R01.
+        lines[addendaIdx] = splice(splice(lines[addendaIdx], 1..2, "99"), 3..5, "R01")
+        val returns = Nacha.returns(lines.joinToString("\n"))
+        assertEquals(1, returns.size)
+        assertEquals("R01", returns[0].code)
+        assertEquals("Insufficient Funds", returns[0].meaning)
+        assertEquals(addendaIdx + 1, returns[0].line)
+        // A well-formed return reason code is NOT a validation problem.
+        assertTrue(Nacha.validate(lines.joinToString("\n")).none { it.message.contains("reason code") })
+    }
+
+    @Test
+    fun `a malformed return reason code is flagged`() {
+        val file = Nacha.sampleFile(Rng(3L), valid = true)
+        val lines = file.split("\n").toMutableList()
+        val addendaIdx = lines.indexOfFirst { it[0] == '7' }
+        // Type-99 return addenda whose reason code "RX1" is not R + two digits.
+        lines[addendaIdx] = splice(splice(lines[addendaIdx], 1..2, "99"), 3..5, "RX1")
+        val problems = Nacha.validate(lines.joinToString("\n"))
+        assertTrue(problems.any { it.message.contains("reason code 'RX1' is malformed") }, "got $problems")
+    }
 }
