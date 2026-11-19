@@ -75,4 +75,19 @@ class AamvaInspectorTest {
         val outcome = AamvaInspector.inspect(head + badDesignator) as AamvaInspector.Outcome.Invalid
         assertTrue(outcome.reason.contains("extends past"))
     }
+
+    @Test
+    fun `data-element ids map to their published AAMVA names`() {
+        // EXTERNAL anchor: data-element identifiers and names from the AAMVA DL/ID Card Design Standard
+        // (Annex D data-element dictionary).
+        assertEquals("Customer Family Name", AamvaInspector.elementName("DCS"))
+        assertEquals("Customer First Name", AamvaInspector.elementName("DAC"))
+        assertEquals("Date of Birth", AamvaInspector.elementName("DBB"))
+        assertEquals("Document Expiration Date", AamvaInspector.elementName("DBA"))
+        assertEquals("Customer ID Number", AamvaInspector.elementName("DAQ"))
+        assertEquals("Document Discriminator", AamvaInspector.elementName("DCF"))
+        assertEquals("Family Name Truncation", AamvaInspector.elementName("DDE"))
+        // An id not in the standard dictionary is left unlabelled.
+        assertEquals(null, AamvaInspector.elementName("ZZZ"))
+    }
 }

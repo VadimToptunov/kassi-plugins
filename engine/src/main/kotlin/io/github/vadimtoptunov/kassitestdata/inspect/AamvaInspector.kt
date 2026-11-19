@@ -17,6 +17,61 @@ object AamvaInspector {
 
     data class Field(val elementId: String, val value: String)
     data class Subfile(val type: String, val fields: List<Field>)
+
+    /**
+     * AAMVA DL/ID data-element identifiers → their published names, from the AAMVA DL/ID Card Design
+     * Standard (Annex D data-element dictionary). Covers the mandatory DL elements plus the common
+     * optional ones. Used purely to LABEL a parsed element; an id absent here is shown as-is. The exact
+     * names are the external published reference (see the unit test).
+     */
+    val ELEMENT_NAMES: Map<String, String> = linkedMapOf(
+        // Mandatory DL elements
+        "DCA" to "Jurisdiction-specific vehicle class",
+        "DCB" to "Jurisdiction-specific restriction codes",
+        "DCD" to "Jurisdiction-specific endorsement codes",
+        "DBA" to "Document Expiration Date",
+        "DCS" to "Customer Family Name",
+        "DAC" to "Customer First Name",
+        "DAD" to "Customer Middle Name(s)",
+        "DBD" to "Document Issue Date",
+        "DBB" to "Date of Birth",
+        "DBC" to "Physical Description – Sex",
+        "DAY" to "Physical Description – Eye Color",
+        "DAU" to "Physical Description – Height",
+        "DAG" to "Address – Street 1",
+        "DAI" to "Address – City",
+        "DAJ" to "Address – Jurisdiction Code",
+        "DAK" to "Address – Postal Code",
+        "DAQ" to "Customer ID Number",
+        "DCF" to "Document Discriminator",
+        "DCG" to "Country Identification",
+        "DDE" to "Family Name Truncation",
+        "DDF" to "First Name Truncation",
+        "DDG" to "Middle Name Truncation",
+        // Common optional elements
+        "DAH" to "Address – Street 2",
+        "DAZ" to "Hair Color",
+        "DCI" to "Place of Birth",
+        "DCJ" to "Audit Information",
+        "DCK" to "Inventory Control Number",
+        "DBN" to "Alias / AKA Family Name",
+        "DBG" to "Alias / AKA Given Name",
+        "DBS" to "Alias / AKA Suffix Name",
+        "DCU" to "Name Suffix",
+        "DCE" to "Physical Description – Weight Range",
+        "DCL" to "Race / Ethnicity",
+        "DDA" to "Compliance Type",
+        "DDB" to "Card Revision Date",
+        "DDC" to "HazMat Endorsement Expiration Date",
+        "DDD" to "Limited Duration Document Indicator",
+        "DAW" to "Weight (pounds)",
+        "DAX" to "Weight (kilograms)",
+        "DDK" to "Organ Donor Indicator",
+        "DDL" to "Veteran Indicator",
+    )
+
+    /** The published AAMVA name for [elementId], or null when the id is not in the standard dictionary. */
+    fun elementName(elementId: String): String? = ELEMENT_NAMES[elementId]
     data class AamvaResult(
         val iin: String,
         val aamvaVersion: String,

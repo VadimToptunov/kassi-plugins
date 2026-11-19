@@ -57,7 +57,9 @@ class BarcodePanel : JPanel(BorderLayout()) {
             appendLine()
             appendLine("Subfile ${subfile.type} (${subfile.fields.size} field(s)):")
             for (field in subfile.fields) {
-                appendLine("  ${field.elementId}: ${field.value}")
+                val name = AamvaInspector.elementName(field.elementId)
+                val label = if (name != null) "${field.elementId} (${name})" else field.elementId
+                appendLine("  $label: ${field.value}")
             }
         }
     }
