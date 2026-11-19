@@ -160,11 +160,33 @@ class LeakGuardTest {
     }
 
     @Test
+    fun `secret detectors flag SendGrid, Mailgun and Mailchimp keys with a redaction fix`() {
+        // Fragment-assembled; each matches its provider-documented format.
+        // SendGrid — documented SG. + 22-char id + . + 43-char secret.
+        val sendgrid = LeakGuard.scan("SENDGRID_API_KEY=" + "SG." + "A".repeat(22) + "." + "B".repeat(43)).single()
+        assertEquals(LeakGuard.Kind.SENDGRID_API_KEY, sendgrid.kind)
+        assertEquals(false, sendgrid.kind.synthetic)
+        assertTrue(LeakGuard.scan(sendgrid.replacement).isEmpty(), "the redaction placeholder must not re-flag")
+
+        // Mailgun — documented key- prefix + 32 hex.
+        assertEquals(
+            LeakGuard.Kind.MAILGUN_API_KEY,
+            LeakGuard.scan("MAILGUN=" + "key-" + "0123456789abcdef".repeat(2)).single().kind,
+        )
+        // Mailchimp — documented 32 hex + -us + datacenter number.
+        assertEquals(
+            LeakGuard.Kind.MAILCHIMP_API_KEY,
+            LeakGuard.scan("MAILCHIMP=" + "0123456789abcdef".repeat(2) + "-us" + "21").single().kind,
+        )
+    }
+
+    @Test
     fun `secret detectors do not fire on lookalike non-secrets`() {
         assertTrue(LeakGuard.scan("prefix AKIA123 short and AKIALOWERcase0000000 nope").isEmpty()) // too short / lowercase
         assertTrue(LeakGuard.scan("not a jwt: eyJonly.one").isEmpty())
         assertTrue(LeakGuard.scan("gitlab: glpat-tooshort and npm_too_short").isEmpty())        // wrong lengths
         assertTrue(LeakGuard.scan("ai keys: sk-proj-short and hf_tooShort and sk-ant-x").isEmpty()) // wrong lengths
+        assertTrue(LeakGuard.scan("mail: SG.short.x and key-00 and abcdef-us1").isEmpty())       // wrong lengths
     }
 
     @Test
