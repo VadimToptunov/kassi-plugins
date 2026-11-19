@@ -77,6 +77,21 @@ class AamvaInspectorTest {
     }
 
     @Test
+    fun `a DL subfile with every mandatory element reports none missing, and a dropped one is flagged`() {
+        // EXTERNAL anchor: the mandatory DL data-element set from the AAMVA DL/ID Card Design Standard.
+        val all = AamvaInspector.MANDATORY_DL_ELEMENTS.toList()
+        fun bodyOf(ids: List<String>) = "DL" + ids.joinToString("\n") { "${it}X" } + "\r"
+
+        val complete = AamvaInspector.inspect(buildPayload("636000", "08", "00", bodyOf(all)))
+            as AamvaInspector.Outcome.Success
+        assertTrue(AamvaInspector.missingMandatoryElements(complete.result).isEmpty())
+
+        val withoutDca = AamvaInspector.inspect(buildPayload("636000", "08", "00", bodyOf(all - "DCA")))
+            as AamvaInspector.Outcome.Success
+        assertEquals(listOf("DCA"), AamvaInspector.missingMandatoryElements(withoutDca.result))
+    }
+
+    @Test
     fun `data-element ids map to their published AAMVA names`() {
         // EXTERNAL anchor: data-element identifiers and names from the AAMVA DL/ID Card Design Standard
         // (Annex D data-element dictionary).

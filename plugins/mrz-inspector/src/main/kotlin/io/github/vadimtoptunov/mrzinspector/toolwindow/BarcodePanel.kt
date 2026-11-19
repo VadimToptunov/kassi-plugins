@@ -62,5 +62,13 @@ class BarcodePanel : JPanel(BorderLayout()) {
                 appendLine("  $label: ${field.value}")
             }
         }
+        val missing = AamvaInspector.missingMandatoryElements(r)
+        if (missing.isNotEmpty()) {
+            appendLine()
+            appendLine("⚠ DL subfile is missing ${missing.size} mandatory element(s):")
+            for (id in missing) {
+                appendLine("  $id (${AamvaInspector.elementName(id) ?: "?"})")
+            }
+        }
     }
 }

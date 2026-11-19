@@ -72,6 +72,26 @@ object AamvaInspector {
 
     /** The published AAMVA name for [elementId], or null when the id is not in the standard dictionary. */
     fun elementName(elementId: String): String? = ELEMENT_NAMES[elementId]
+
+    /**
+     * The mandatory data elements of a DL (driver's license) subfile, per the AAMVA DL/ID Card Design
+     * Standard. An ID-card ("ID") subfile has a different mandatory set, so the presence check below is
+     * intentionally scoped to the "DL" subfile only.
+     */
+    val MANDATORY_DL_ELEMENTS: Set<String> = linkedSetOf(
+        "DCA", "DCB", "DCD", "DBA", "DCS", "DAC", "DAD", "DBD", "DBB", "DBC",
+        "DAY", "DAU", "DAG", "DAI", "DAJ", "DAK", "DAQ", "DCF", "DCG", "DDE", "DDF", "DDG",
+    )
+
+    /**
+     * The mandatory DL elements (in standard order) that the DL subfile of [result] is missing. Empty
+     * when the DL subfile carries them all, or when there is no DL subfile (nothing to check).
+     */
+    fun missingMandatoryElements(result: AamvaResult): List<String> {
+        val dl = result.subfiles.firstOrNull { it.type == "DL" } ?: return emptyList()
+        val present = dl.fields.mapTo(HashSet()) { it.elementId }
+        return MANDATORY_DL_ELEMENTS.filter { it !in present }
+    }
     data class AamvaResult(
         val iin: String,
         val aamvaVersion: String,
