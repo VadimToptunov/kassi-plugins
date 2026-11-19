@@ -37,6 +37,9 @@ object LeakGuard {
         SLACK_TOKEN("Slack token", synthetic = false),
         GITLAB_PAT("GitLab personal access token", synthetic = false),
         NPM_TOKEN("npm access token", synthetic = false),
+        OPENAI_API_KEY("OpenAI API key", synthetic = false),
+        ANTHROPIC_API_KEY("Anthropic API key", synthetic = false),
+        HUGGINGFACE_TOKEN("Hugging Face access token", synthetic = false),
     }
 
     data class Finding(val kind: Kind, val range: IntRange, val matched: String, val replacement: String)
@@ -67,6 +70,12 @@ object LeakGuard {
     private val GITLAB_PAT = Regex("""\bglpat-[A-Za-z0-9_-]{20}\b""")
     // npm access token: documented npm_ prefix + 36 base62 characters.
     private val NPM_TOKEN = Regex("""\bnpm_[A-Za-z0-9]{36}\b""")
+    // OpenAI API key: documented project-scoped `sk-proj-…` form, or the legacy `sk-` + 48 base62 form.
+    private val OPENAI_API_KEY = Regex("""\bsk-proj-[A-Za-z0-9_-]{20,}\b|\bsk-[A-Za-z0-9]{48}\b""")
+    // Anthropic API key: documented sk-ant- prefix (e.g. sk-ant-api03-…) + token body.
+    private val ANTHROPIC_API_KEY = Regex("""\bsk-ant-[A-Za-z0-9_-]{20,}\b""")
+    // Hugging Face user access token: documented hf_ prefix + 34 base62 characters.
+    private val HUGGINGFACE_TOKEN = Regex("""\bhf_[A-Za-z0-9]{34}\b""")
 
     fun scan(text: String): List<Finding> =
         (scanIbans(text) + scanPans(text) + scanSsns(text) + scanSecrets(text)).sortedBy { it.range.first }
@@ -81,6 +90,9 @@ object LeakGuard {
         SLACK_TOKEN.findAll(text).forEach { add(Finding(Kind.SLACK_TOKEN, it.range, it.value, "REDACTED_SLACK_TOKEN")) }
         GITLAB_PAT.findAll(text).forEach { add(Finding(Kind.GITLAB_PAT, it.range, it.value, "REDACTED_GITLAB_PAT")) }
         NPM_TOKEN.findAll(text).forEach { add(Finding(Kind.NPM_TOKEN, it.range, it.value, "REDACTED_NPM_TOKEN")) }
+        ANTHROPIC_API_KEY.findAll(text).forEach { add(Finding(Kind.ANTHROPIC_API_KEY, it.range, it.value, "REDACTED_ANTHROPIC_API_KEY")) }
+        OPENAI_API_KEY.findAll(text).forEach { add(Finding(Kind.OPENAI_API_KEY, it.range, it.value, "REDACTED_OPENAI_API_KEY")) }
+        HUGGINGFACE_TOKEN.findAll(text).forEach { add(Finding(Kind.HUGGINGFACE_TOKEN, it.range, it.value, "REDACTED_HUGGINGFACE_TOKEN")) }
     }
 
     private fun scanIbans(text: String): List<Finding> = IBAN_CANDIDATE.findAll(text).mapNotNull { m ->
