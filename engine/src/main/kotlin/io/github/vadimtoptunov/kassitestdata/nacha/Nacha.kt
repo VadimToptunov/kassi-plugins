@@ -173,8 +173,25 @@ object Nacha {
      * total-credit amount is corrupted by one cent, so a validator flags exactly that field (a targeted
      * negative-test fixture) while the rest of the file stays well-formed.
      */
-    /** The Standard Entry Class codes this generator supports (all consumer/corporate ACH, 3 letters). */
-    val SEC_CODES = listOf("PPD", "CCD", "WEB", "TEL")
+    /**
+     * Standard Entry Class codes this generator supports, code → published name, from the Nacha
+     * Operating Rules & Guidelines. The consumer/corporate codes (PPD/CCD/WEB/TEL) plus the four
+     * check-conversion debit codes (ARC/BOC/POP/RCK). The SEC code occupies positions 51–53 of the
+     * type-5 batch header; the names are the external published reference (see the unit test).
+     */
+    val SEC_CODE_NAMES: Map<String, String> = linkedMapOf(
+        "PPD" to "Prearranged Payment and Deposit Entry",
+        "CCD" to "Corporate Credit or Debit Entry",
+        "WEB" to "Internet-Initiated/Mobile Entry",
+        "TEL" to "Telephone-Initiated Entry",
+        "ARC" to "Accounts Receivable Entry",
+        "BOC" to "Back Office Conversion Entry",
+        "POP" to "Point-of-Purchase Entry",
+        "RCK" to "Re-presented Check Entry",
+    )
+
+    /** The Standard Entry Class codes this generator supports (3 letters each). */
+    val SEC_CODES: List<String> = SEC_CODE_NAMES.keys.toList()
 
     fun generateFile(
         entries: List<Entry>,
