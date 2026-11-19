@@ -90,9 +90,10 @@ class NachaToolkitPanel : JPanel(BorderLayout()) {
 
     private fun generate(valid: Boolean) {
         val sec = secPicker.item ?: "PPD"
+        val secName = Nacha.SEC_CODE_NAMES[sec]?.let { " ($it)" } ?: ""
         fileArea.text = Nacha.sampleFile(rng, valid = valid, secCode = sec)
         resultArea.text = if (valid) {
-            "Generated a spec-valid $sec sample (3 entries). Click Validate to confirm."
+            "Generated a spec-valid $sec$secName sample (3 entries). Click Validate to confirm."
         } else {
             "Generated a deliberately-invalid sample (total-credit control is off by one cent) — " +
                 "click Validate to see it flagged."

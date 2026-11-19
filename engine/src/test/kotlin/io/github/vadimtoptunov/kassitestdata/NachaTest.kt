@@ -193,4 +193,29 @@ class NachaTest {
         val problems = Nacha.validate(lines.joinToString("\n"))
         assertTrue(problems.any { it.message.contains("change code 'CX2' is malformed") }, "got $problems")
     }
+
+    @Test
+    fun `SEC codes map to their published Nacha names and include the check-conversion codes`() {
+        // EXTERNAL anchor: Standard Entry Class code names from the Nacha Operating Rules & Guidelines.
+        assertEquals("Prearranged Payment and Deposit Entry", Nacha.SEC_CODE_NAMES["PPD"])
+        assertEquals("Corporate Credit or Debit Entry", Nacha.SEC_CODE_NAMES["CCD"])
+        assertEquals("Accounts Receivable Entry", Nacha.SEC_CODE_NAMES["ARC"])
+        assertEquals("Back Office Conversion Entry", Nacha.SEC_CODE_NAMES["BOC"])
+        assertEquals("Point-of-Purchase Entry", Nacha.SEC_CODE_NAMES["POP"])
+        assertEquals("Re-presented Check Entry", Nacha.SEC_CODE_NAMES["RCK"])
+        // SEC_CODES is derived from the name map, so every listed code has a published name.
+        assertEquals(Nacha.SEC_CODE_NAMES.keys.toList(), Nacha.SEC_CODES)
+        assertTrue(Nacha.SEC_CODES.containsAll(listOf("ARC", "BOC", "POP", "RCK")))
+    }
+
+    @Test
+    fun `the check-conversion SEC codes each produce a valid file carrying the code`() {
+        // The SEC code occupies positions 51-53 (0-indexed 50..52) of the type-5 batch header record.
+        for (sec in listOf("ARC", "BOC", "POP", "RCK")) {
+            val file = Nacha.sampleFile(Rng(9L), valid = true, secCode = sec)
+            val batchHeader = file.split("\n").first { it[0] == '5' }
+            assertEquals(sec, batchHeader.substring(50, 53), "batch header carries the $sec SEC code")
+            assertTrue(Nacha.validate(file).isEmpty(), "$sec file validates: ${Nacha.validate(file)}")
+        }
+    }
 }
