@@ -20,7 +20,9 @@
       <i>Kassi Test Data</i>'s DE ID card generator.</li>
       <li><b>Barcode tab</b> — paste the decoded text payload of an AAMVA-compliant PDF417 barcode
       (US/Canada driver's license or ID card): header (IIN, AAMVA/jurisdiction version) and every
-      subfile's data elements, or a precise structural error if the payload is malformed.</li>
+      subfile's data elements — each labelled with its <b>AAMVA element name</b> (<code>DCS</code> →
+      Customer Family Name, <code>DBB</code> → Date of Birth, …) — or a precise structural error if the
+      payload is malformed.</li>
       <li><b>ICAO 9303 name transliteration</b> — type a name with national characters and get its
       Machine Readable Zone form (<code>Müller</code> → <code>MUELLER</code>, <code>Åström</code> →
       <code>AASTROEM</code>), the Latin-based transliteration from ICAO Doc 9303 Part 3.</li>
@@ -34,6 +36,7 @@
     ]]></description>
 
     <change-notes><![CDATA[
+    <h3>1.8.0</h3><ul><li><b>AAMVA data-element labels:</b> the Barcode tab now shows each parsed data element with its <b>published AAMVA name</b> — <code>DCS</code> → Customer Family Name, <code>DAC</code> → Customer First Name, <code>DBB</code> → Date of Birth, <code>DAQ</code> → Customer ID Number, … — from the AAMVA DL/ID Card Design Standard element dictionary (mandatory DL elements plus the common optional ones). An element id outside the standard dictionary is shown as-is.</li></ul>
     <h3>1.7.0</h3><ul><li>Asks once for a Marketplace review after you have used the plugin for a while — a plain, dismissable notification with "Don't ask again". Nothing else changes.</li></ul>
     <h3>1.6.0</h3><ul><li><b>Generate a sample passport (TD3) MRZ</b>: one click produces a spec-valid 2×44 passport Machine Readable Zone with correct ICAO 7-3-1 check digits (document number, dates, personal number and composite) — the writer companion to the inspector. Anchored to the published ICAO Doc 9303 specimen.</li></ul>
     <h3>1.5.0</h3><ul><li>ICAO 9303 name transliteration: type a name with national characters (e.g. <code>Müller</code>, <code>Åström</code>, <code>Peña</code>) and get its Machine Readable Zone form (<code>MUELLER</code>, <code>AASTROEM</code>, <code>PENA</code>) — the Latin-based transliteration used to render a name into the MRZ, per ICAO Doc 9303 Part 3.</li></ul>
