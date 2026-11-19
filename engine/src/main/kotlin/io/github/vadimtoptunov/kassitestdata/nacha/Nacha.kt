@@ -107,6 +107,29 @@ object Nacha {
         "R33" to "Return of XCK Entry",
     )
 
+    /**
+     * Notification of Change (NOC / COR) Change Codes (C01–C14), code → published meaning, from the Nacha
+     * Operating Rules & Guidelines. A NOC is carried as a type-7 addenda with addenda type code 98 (the
+     * COR "corrected data" addenda); its 3-character change code sits in positions 4–6. This dictionary
+     * explains a NOC file — the exact strings are the external published reference (see the unit test).
+     */
+    val CHANGE_CODES: Map<String, String> = linkedMapOf(
+        "C01" to "Incorrect DFI Account Number",
+        "C02" to "Incorrect Routing Number",
+        "C03" to "Incorrect Routing Number and Incorrect DFI Account Number",
+        "C04" to "Incorrect Individual Name/Receiving Company Name",
+        "C05" to "Incorrect Transaction Code",
+        "C06" to "Incorrect DFI Account Number and Incorrect Transaction Code",
+        "C07" to "Incorrect Routing Number, Incorrect DFI Account Number, and Incorrect Transaction Code",
+        "C08" to "Incorrect Receiving DFI Identification (IAT Only)",
+        "C09" to "Incorrect Individual Identification Number/Incorrect Receiver Identification Number",
+        "C10" to "Incorrect Company Name",
+        "C11" to "Incorrect Company Identification",
+        "C12" to "Incorrect Company Name and Company Identification",
+        "C13" to "Addenda Format Error",
+        "C14" to "Incorrect SEC Code for Outbound International Payment",
+    )
+
     /** One return found in a file: the 1-based [line], the [code] (e.g. "R01") and its meaning, if known. */
     data class Return(val line: Int, val code: String, val meaning: String?)
 
@@ -120,6 +143,24 @@ object Nacha {
             if (line.length == W && line[0] == '7' && line.substring(1, 3) == "99") {
                 val code = line.substring(3, 6).trim().uppercase()
                 out += Return(i + 1, code, RETURN_REASON_CODES[code])
+            }
+        }
+        return out
+    }
+
+    /** One notification of change: the 1-based [line], the [code] (e.g. "C01") and its meaning, if known. */
+    data class ChangeNotification(val line: Int, val code: String, val meaning: String?)
+
+    /**
+     * Scan a file for NOC addenda (type-7 records with addenda type code 98) and report each change
+     * notification's code and published meaning. Empty when the file carries no NOCs.
+     */
+    fun changeNotifications(text: String): List<ChangeNotification> {
+        val out = ArrayList<ChangeNotification>()
+        text.split("\n").filter { it.isNotEmpty() }.forEachIndexed { i, line ->
+            if (line.length == W && line[0] == '7' && line.substring(1, 3) == "98") {
+                val code = line.substring(3, 6).trim().uppercase()
+                out += ChangeNotification(i + 1, code, CHANGE_CODES[code])
             }
         }
         return out
@@ -348,6 +389,12 @@ object Nacha {
                 val code = line.substring(3, 6).uppercase()
                 if (!Regex("^R\\d\\d$").matches(code)) {
                     problems += Problem(idx + 1, "Return addenda reason code '$code' is malformed (expected 'R' and two digits).")
+                }
+            } else if (addendaType == "98") {
+                // A NOC/COR addenda (type 98) carries a 3-char change code in positions 4-6.
+                val code = line.substring(3, 6).uppercase()
+                if (!Regex("^C\\d\\d$").matches(code)) {
+                    problems += Problem(idx + 1, "NOC addenda change code '$code' is malformed (expected 'C' and two digits).")
                 }
             }
         }
